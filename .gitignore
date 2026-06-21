@@ -1,54 +1,89 @@
-# See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
+# Dependencies
+node_modules/
+.pnp
+.pnp.js
+.yarn/install-state.gz
 
-# dependencies
-node_modules
-/.pnp
-.pnp.*
-.yarn/*
-!.yarn/patches
-!.yarn/plugins
-!.yarn/releases
-!.yarn/versions
+# Testing
+coverage/
 
-# testing
-/coverage
+# Next.js
+.next/
+out/
+build/
+dist/
 
-# next.js
-/.next/
-/out/
+# Production
+*.tsbuildinfo
+next-env.d.ts
 
-# production
-/build
+# Vercel
+.vercel/
 
-# misc
-.DS_Store
-*.pem
+# Environment
+.env
+.env*.local
+.env.development
+.env.production
+.env.test
 
-# debug
+# Z-AI config (contains secrets)
+.z-ai-config
+
+# Debug
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
-.pnpm-debug.log*
+bun.lockb
 
-# env files (can opt-in for committing if needed)
-.env*
+# OS
+.DS_Store
+*.pem
+Thumbs.db
 
-# vercel
-.vercel
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
 
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+venv/
+env/
+ENV/
+.venv/
+*.egg-info/
 
-# typescript
-*.tsbuildinfo
-next-env.d.ts
-local-*
-.claude
-.z-ai-config
-*.log
+# Database
+*.db
+*.sqlite
+*.sqlite3
+db/
+
+# Logs
 dev.log
-dev.out.log
-test
-prompt
-
 server.log
-# Skills directory
-/skills/
+*.log
+
+# Mini-service artifacts
+mini-services/forecast-service/__pycache__/
+
+# Generated downloads (screenshots etc.)
+download/*.png
+download/*.jpg
+
+# Worklog (internal)
+worklog.md
+
+# Scripts (temporary)
+scripts/
+skills/
+examples/
+agent-ctx/
+.zscripts/
