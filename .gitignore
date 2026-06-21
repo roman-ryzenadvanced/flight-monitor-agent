@@ -87,3 +87,11 @@ skills/
 examples/
 agent-ctx/
 .zscripts/
+
+# Internal files
+.env
+worklog.md
+.zscripts/
+examples/
+download/
+agent-ctx/
