@@ -217,32 +217,32 @@ export default function Home() {
     <div className="min-h-screen flex flex-col bg-background">
       {/* Header */}
       <header className="sticky top-0 z-40 border-b bg-background/80 backdrop-blur-md">
-        <div className="container mx-auto px-4 py-3 flex items-center justify-between gap-4">
-          <div className="flex items-center gap-3 min-w-0">
-            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-primary text-primary-foreground">
-              <Plane className="h-5 w-5" />
+        <div className="container mx-auto px-3 sm:px-4 py-2.5 sm:py-3 flex items-center justify-between gap-2">
+          <div className="flex items-center gap-2 sm:gap-3 min-w-0">
+            <div className="flex h-9 w-9 sm:h-10 sm:w-10 shrink-0 items-center justify-center rounded-xl bg-primary text-primary-foreground">
+              <Plane className="h-4 w-4 sm:h-5 sm:w-5" />
             </div>
             <div className="min-w-0">
-              <h1 className="font-bold text-base sm:text-lg leading-tight truncate">
+              <h1 className="font-bold text-sm sm:text-lg leading-tight truncate">
                 {t("appTitle")}
               </h1>
-              <p className="text-xs text-muted-foreground truncate">
+              <p className="text-[10px] sm:text-xs text-muted-foreground truncate hidden sm:block">
                 {t("appSubtitle")}
               </p>
             </div>
           </div>
-          <div className="flex items-center gap-2 sm:gap-3">
+          <div className="flex items-center gap-1.5 sm:gap-3 shrink-0">
             <Button
               variant="outline"
               size="sm"
               onClick={handleManualRefresh}
               disabled={refreshing}
-              className="gap-2"
+              className="gap-1.5 h-9 sm:h-9 min-h-[40px] px-2.5"
             >
               <RefreshCw className={cn("h-4 w-4", refreshing && "animate-spin")} />
               <span className="hidden sm:inline">{refreshing ? "Scanning..." : "Refresh"}</span>
             </Button>
-            <div className="hidden sm:flex items-center gap-1.5 text-xs">
+            <div className="hidden md:flex items-center gap-1.5 text-xs">
               <span className="relative flex h-2 w-2">
                 <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-500 opacity-75" />
                 <span className="relative inline-flex h-2 w-2 rounded-full bg-emerald-500" />
@@ -256,13 +256,13 @@ export default function Home() {
         </div>
       </header>
 
-      <main className="container mx-auto px-4 py-6 flex-1">
-        <Tabs defaultValue="trackers" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-2 sm:grid-cols-5 h-auto">
-            <TabsTrigger value="trackers" className="text-xs sm:text-sm">{t("tabTrackers")}</TabsTrigger>
-            <TabsTrigger value="overview" className="text-xs sm:text-sm">{t("tabOverview")}</TabsTrigger>
-            <TabsTrigger value="forecast" className="text-xs sm:text-sm">{t("tabForecast")}</TabsTrigger>
-            <TabsTrigger value="system" className="text-xs sm:text-sm">{t("tabSystem")}</TabsTrigger>
+      <main className="container mx-auto px-3 sm:px-4 py-4 sm:py-6 flex-1">
+        <Tabs defaultValue="trackers" className="space-y-4 sm:space-y-6">
+          <TabsList className="grid w-full grid-cols-4 h-auto gap-1">
+            <TabsTrigger value="trackers" className="text-xs sm:text-sm min-h-[40px]">{t("tabTrackers")}</TabsTrigger>
+            <TabsTrigger value="overview" className="text-xs sm:text-sm min-h-[40px]">{t("tabOverview")}</TabsTrigger>
+            <TabsTrigger value="forecast" className="text-xs sm:text-sm min-h-[40px]">{t("tabForecast")}</TabsTrigger>
+            <TabsTrigger value="system" className="text-xs sm:text-sm min-h-[40px]">{t("tabSystem")}</TabsTrigger>
           </TabsList>
 
           {/* ===== TRACKERS ===== */}
@@ -289,7 +289,7 @@ export default function Home() {
                   key={f}
                   onClick={() => setTrackerFilter(f)}
                   className={cn(
-                    "px-3 py-1 rounded-md transition-colors",
+                    "px-3 py-1.5 rounded-md transition-colors min-h-[36px] flex items-center",
                     trackerFilter === f
                       ? "bg-primary text-primary-foreground"
                       : "text-muted-foreground hover:bg-accent"

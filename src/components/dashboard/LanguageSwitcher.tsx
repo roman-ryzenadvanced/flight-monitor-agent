@@ -21,35 +21,32 @@ export function LanguageSwitcher({ compact = false }: { compact?: boolean }) {
       <PopoverTrigger asChild>
         <Button
           variant="outline"
-          size={compact ? "icon" : "sm"}
-          className={cn(compact ? "h-9 w-9" : "h-9 gap-2 px-2.5")}
+          size="sm"
+          className="h-9 min-h-[40px] min-w-[40px] gap-1.5 px-2.5"
           title="Language"
+          aria-label="Change language"
         >
-          <Globe className="h-4 w-4" />
-          {!compact && (
-            <span className="text-xs font-medium">{current.flag}</span>
-          )}
-          {!compact && (
-            <span className="text-xs hidden sm:inline">{current.code.toUpperCase()}</span>
-          )}
+          <Globe className="h-4 w-4 shrink-0" />
+          <span className="text-xs font-medium shrink-0">{current.flag}</span>
+          <span className="text-xs hidden md:inline shrink-0">{current.code.toUpperCase()}</span>
         </Button>
       </PopoverTrigger>
-      <PopoverContent className="w-48 p-1" align="end">
+      <PopoverContent className="w-52 max-w-[calc(100vw-2rem)] p-1" align="end">
         <div className="space-y-0.5">
           {languages.map((l) => (
             <button
               key={l.code}
               onClick={() => setLang(l.code)}
               className={cn(
-                "w-full flex items-center gap-2 rounded-md px-2.5 py-1.5 text-sm hover:bg-accent transition-colors text-right",
+                "w-full flex items-center gap-2 rounded-md px-2.5 py-2 text-sm hover:bg-accent transition-colors text-right min-h-[44px]",
                 lang === l.code && "bg-accent"
               )}
               dir="ltr"
             >
-              <span className="text-base shrink-0">{l.flag}</span>
-              <span className="flex-1 text-left">
-                <span className="block text-sm font-medium">{l.name}</span>
-                <span className="block text-[10px] text-muted-foreground">{l.englishName}</span>
+              <span className="text-lg shrink-0">{l.flag}</span>
+              <span className="flex-1 text-left min-w-0">
+                <span className="block text-sm font-medium truncate">{l.name}</span>
+                <span className="block text-[10px] text-muted-foreground truncate">{l.englishName}</span>
               </span>
               {lang === l.code && <Check className="h-4 w-4 text-primary shrink-0" />}
             </button>

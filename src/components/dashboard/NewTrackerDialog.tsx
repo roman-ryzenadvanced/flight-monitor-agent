@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { motion } from "framer-motion";
-import { Plane, Calendar, Users, AlertCircle, Sparkles, ArrowLeftRight } from "lucide-react";
+import { Plane, Calendar, Users, AlertCircle, Sparkles, ArrowLeftRight, ArrowDown } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -123,7 +123,7 @@ export function NewTrackerDialog({ children }: Props) {
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>{children}</DialogTrigger>
-      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+      <DialogContent className="max-w-2xl max-h-[95vh] overflow-y-auto p-4 sm:p-6">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2 text-lg">
             <Plane className="h-5 w-5 text-primary" />
@@ -137,9 +137,36 @@ export function NewTrackerDialog({ children }: Props) {
           animate={{ opacity: 1, y: 0 }}
           className="space-y-5 py-2"
         >
+          {/* Route section — mobile: stack vertically, desktop: side by side */}
           <div className="space-y-2">
             <Label>{t("route")}</Label>
-            <div className="grid grid-cols-[1fr_auto_1fr] gap-2 items-end">
+            {/* Mobile layout: stacked with swap button between */}
+            <div className="sm:hidden space-y-2">
+              <div>
+                <p className="text-[11px] text-muted-foreground mb-1">{t("from")}</p>
+                <AirportCombobox value={originIata} onChange={setOriginIata} placeholder={t("from")} />
+              </div>
+              <div className="flex justify-center">
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="icon"
+                  className="h-11 w-11 rounded-full"
+                  onClick={swapAirports}
+                  disabled={!originIata && !destIata}
+                  title={t("swap")}
+                  aria-label={t("swap")}
+                >
+                  <ArrowDown className="h-4 w-4" />
+                </Button>
+              </div>
+              <div>
+                <p className="text-[11px] text-muted-foreground mb-1">{t("to")}</p>
+                <AirportCombobox value={destIata} onChange={setDestIata} placeholder={t("to")} excludeIata={originIata} />
+              </div>
+            </div>
+            {/* Desktop layout: side by side with swap button in middle */}
+            <div className="hidden sm:grid grid-cols-[1fr_auto_1fr] gap-2 items-end">
               <div>
                 <p className="text-[11px] text-muted-foreground mb-1">{t("from")}</p>
                 <AirportCombobox value={originIata} onChange={setOriginIata} placeholder={t("from")} />
@@ -148,10 +175,11 @@ export function NewTrackerDialog({ children }: Props) {
                 type="button"
                 variant="outline"
                 size="icon"
-                className="h-11 w-11"
+                className="h-12 w-12"
                 onClick={swapAirports}
                 disabled={!originIata && !destIata}
                 title={t("swap")}
+                aria-label={t("swap")}
               >
                 <ArrowLeftRight className="h-4 w-4" />
               </Button>
@@ -168,17 +196,18 @@ export function NewTrackerDialog({ children }: Props) {
             )}
           </div>
 
+          {/* Dates */}
           <div className="space-y-2">
             <div className="flex items-center justify-between">
               <Label>{t("dates")}</Label>
               <div className="flex items-center gap-2">
-                <Label htmlFor="round-trip" className="text-xs text-muted-foreground">
+                <Label htmlFor="round-trip" className="text-xs text-muted-foreground cursor-pointer">
                   {t("roundTrip")}
                 </Label>
                 <Switch id="round-trip" checked={roundTrip} onCheckedChange={setRoundTrip} />
               </div>
             </div>
-            <div className={roundTrip ? "grid grid-cols-2 gap-2" : ""}>
+            <div className={roundTrip ? "grid grid-cols-1 sm:grid-cols-2 gap-2" : ""}>
               <div>
                 <p className="text-[11px] text-muted-foreground mb-1 flex items-center gap-1">
                   <Calendar className="h-3 w-3" /> {t("departure")}
@@ -188,7 +217,7 @@ export function NewTrackerDialog({ children }: Props) {
                   value={departDate}
                   onChange={(e) => setDepartDate(e.target.value)}
                   min={toYMD(new Date())}
-                  className="h-11"
+                  className="h-12 min-h-[48px]"
                 />
               </div>
               {roundTrip && (
@@ -201,13 +230,14 @@ export function NewTrackerDialog({ children }: Props) {
                     value={returnDate}
                     onChange={(e) => setReturnDate(e.target.value)}
                     min={departDate || toYMD(new Date())}
-                    className="h-11"
+                    className="h-12 min-h-[48px]"
                   />
                 </div>
               )}
             </div>
           </div>
 
+          {/* Cabin + Passengers */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label>{t("cabin")}</Label>
@@ -221,7 +251,7 @@ export function NewTrackerDialog({ children }: Props) {
                     <RadioGroupItem value={c} id={`cabin-${c}`} className="peer sr-only" />
                     <Label
                       htmlFor={`cabin-${c}`}
-                      className="flex-1 text-center text-xs cursor-pointer rounded-md border py-2 px-1 hover:bg-accent peer-data-[state=checked]:border-primary peer-data-[state=checked]:bg-primary/10 peer-data-[state=checked]:text-primary transition-colors"
+                      className="flex-1 text-center text-xs cursor-pointer rounded-md border py-2.5 px-1 min-h-[44px] flex items-center justify-center hover:bg-accent peer-data-[state=checked]:border-primary peer-data-[state=checked]:bg-primary/10 peer-data-[state=checked]:text-primary transition-colors"
                     >
                       {getCabinLabel(c, lang)}
                     </Label>
@@ -236,26 +266,29 @@ export function NewTrackerDialog({ children }: Props) {
                   type="button"
                   variant="outline"
                   size="icon"
-                  className="h-11 w-11"
+                  className="h-12 w-12 min-h-[48px] min-w-[48px] text-xl"
                   onClick={() => setPassengers((p) => Math.max(1, p - 1))}
                   disabled={passengers <= 1}
+                  aria-label="Decrease passengers"
                 >−</Button>
-                <div className="flex-1 flex items-center justify-center gap-2 border rounded-md h-11">
+                <div className="flex-1 flex items-center justify-center gap-2 border rounded-md h-12 min-h-[48px]">
                   <Users className="h-4 w-4 text-muted-foreground" />
-                  <span className="font-semibold tabular-nums">{passengers}</span>
+                  <span className="font-semibold tabular-nums text-lg">{passengers}</span>
                 </div>
                 <Button
                   type="button"
                   variant="outline"
                   size="icon"
-                  className="h-11 w-11"
+                  className="h-12 w-12 min-h-[48px] min-w-[48px] text-xl"
                   onClick={() => setPassengers((p) => Math.min(9, p + 1))}
                   disabled={passengers >= 9}
+                  aria-label="Increase passengers"
                 >+</Button>
               </div>
             </div>
           </div>
 
+          {/* Alert threshold */}
           <div className="space-y-2 rounded-lg border p-3 bg-muted/30">
             <div className="flex items-center justify-between">
               <Label className="flex items-center gap-2">
@@ -267,7 +300,7 @@ export function NewTrackerDialog({ children }: Props) {
             {alertEnabled && (
               <div className="flex items-center gap-2 mt-2 flex-wrap">
                 <span className="text-sm text-muted-foreground">{t("alertMeWhen")}</span>
-                <div className="relative w-28">
+                <div className="relative w-32">
                   <span className="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground text-sm">$</span>
                   <Input
                     type="number"
@@ -277,13 +310,14 @@ export function NewTrackerDialog({ children }: Props) {
                       setAlertThreshold(e.target.value === "" ? "" : Number(e.target.value))
                     }
                     placeholder="500"
-                    className="h-9 pr-6 text-right"
+                    className="h-11 min-h-[44px] pr-6 text-right"
                   />
                 </div>
               </div>
             )}
           </div>
 
+          {/* Notes */}
           <div className="space-y-2">
             <Label htmlFor="notes">{t("notes")}</Label>
             <Input
@@ -291,15 +325,15 @@ export function NewTrackerDialog({ children }: Props) {
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
               placeholder={t("notesPlaceholder")}
-              className="h-10"
+              className="h-12 min-h-[48px]"
               maxLength={120}
             />
           </div>
         </motion.div>
 
-        <DialogFooter>
-          <Button variant="outline" onClick={() => setOpen(false)}>{t("cancel")}</Button>
-          <Button onClick={handleSubmit} disabled={!valid}>
+        <DialogFooter className="flex-row gap-2 sm:flex-row sm:justify-end">
+          <Button variant="outline" onClick={() => setOpen(false)} className="flex-1 sm:flex-none h-12 min-h-[48px]">{t("cancel")}</Button>
+          <Button onClick={handleSubmit} disabled={!valid} className="flex-1 sm:flex-none h-12 min-h-[48px]">
             <Plane className="h-4 w-4" />
             {t("startTracking")}
           </Button>

@@ -151,14 +151,14 @@ export function ForecastPanel({ history, route }: Props) {
         </div>
 
         {loading && (
-          <div className="h-64 flex flex-col items-center justify-center gap-3 text-muted-foreground">
+          <div className="h-48 sm:h-64 flex flex-col items-center justify-center gap-3 text-muted-foreground">
             <Loader2 className="h-6 w-6 animate-spin" />
             <p className="text-sm">{t("forecasting")}</p>
           </div>
         )}
 
         {error && !loading && (
-          <div className="h-64 flex flex-col items-center justify-center gap-2 text-rose-600 dark:text-rose-400">
+          <div className="h-48 sm:h-64 flex flex-col items-center justify-center gap-2 text-rose-600 dark:text-rose-400">
             <p className="text-sm">{t("forecastFailed")}</p>
             <p className="text-xs text-muted-foreground">{error}</p>
           </div>
@@ -195,7 +195,7 @@ export function ForecastPanel({ history, route }: Props) {
               </div>
             </div>
 
-            <div className="h-64 w-full" dir="ltr">
+            <div className="h-48 sm:h-64 w-full" dir="ltr">
               <ResponsiveContainer width="100%" height="100%">
                 <AreaChart
                   data={forecast.points}
@@ -214,6 +214,7 @@ export function ForecastPanel({ history, route }: Props) {
                     tickLine={false}
                     axisLine={{ stroke: "oklch(0.922 0 0)" }}
                     interval="preserveStartEnd"
+                    minTickGap={20}
                   />
                   <YAxis
                     tick={{ fontSize: 11, fill: "oklch(0.556 0 0)" }}

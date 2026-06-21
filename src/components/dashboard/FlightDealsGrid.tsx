@@ -5,7 +5,6 @@ import { motion } from "framer-motion";
 import {
   ExternalLink,
   Plane,
-  TrendingDown,
   Clock,
   RefreshCw,
   Sparkles,
@@ -86,18 +85,18 @@ export function FlightDealsGrid({ tracker, latestSnapshot, onRefresh, refreshing
   if (!origin || !dest) return null;
 
   return (
-    <Card className="p-5">
+    <Card className="p-4 sm:p-5">
       <div className="flex items-start justify-between mb-4 flex-wrap gap-3">
-        <div>
+        <div className="min-w-0 flex-1">
           <div className="flex items-center gap-2">
-            <ShoppingBag className="h-5 w-5 text-primary" />
-            <h3 className="font-semibold text-lg">
+            <ShoppingBag className="h-5 w-5 text-primary shrink-0" />
+            <h3 className="font-semibold text-base sm:text-lg truncate">
               Flight deals · {origin.iata} → {dest.iata}
             </h3>
           </div>
           <p className="text-sm text-muted-foreground mt-0.5">
             {deals.length > 0
-              ? `${deals.length} options from ${new Set(deals.map((d) => d.source)).size} sources · fetched ${latestSnapshot ? new Date(latestSnapshot.ts).toLocaleString() : ""}`
+              ? `${deals.length} options from ${new Set(deals.map((d) => d.source)).size} sources`
               : "No deals fetched yet"}
           </p>
         </div>
@@ -107,24 +106,24 @@ export function FlightDealsGrid({ tracker, latestSnapshot, onRefresh, refreshing
             size="sm"
             onClick={() => onRefresh(tracker.id)}
             disabled={refreshing}
-            className="gap-2"
+            className="gap-2 h-10 min-h-[44px] shrink-0"
           >
             <RefreshCw className={cn("h-4 w-4", refreshing && "animate-spin")} />
-            <span className="hidden sm:inline">{refreshing ? "Fetching..." : "Refresh prices"}</span>
+            <span className="hidden sm:inline">{refreshing ? "Fetching..." : "Refresh"}</span>
           </Button>
         )}
       </div>
 
-      {/* Sort tabs */}
+      {/* Sort tabs — bigger touch targets */}
       {deals.length > 0 && (
-        <div className="flex items-center gap-1 text-xs mb-3">
-          <span className="text-muted-foreground ml-1">Sort by:</span>
+        <div className="flex items-center gap-1 text-xs mb-3 overflow-x-auto">
+          <span className="text-muted-foreground ml-1 shrink-0">Sort:</span>
           {(["price", "stops", "airline"] as const).map((s) => (
             <button
               key={s}
               onClick={() => setSortBy(s)}
               className={cn(
-                "px-2.5 py-1 rounded-md transition-colors capitalize",
+                "px-3 py-1.5 rounded-md transition-colors capitalize min-h-[36px] flex items-center",
                 sortBy === s
                   ? "bg-primary text-primary-foreground"
                   : "text-muted-foreground hover:bg-accent"
@@ -139,13 +138,13 @@ export function FlightDealsGrid({ tracker, latestSnapshot, onRefresh, refreshing
       {deals.length === 0 ? (
         <div className="py-8 text-center">
           <Plane className="h-10 w-10 mx-auto text-muted-foreground mb-3 opacity-50" />
-          <p className="text-sm text-muted-foreground mb-3">
-            No flight deals yet. Click "Refresh prices" to fetch live options from multiple sources.
+          <p className="text-sm text-muted-foreground mb-3 px-4">
+            No flight deals yet. Tap "Refresh" to fetch live options.
           </p>
           {onRefresh && (
-            <Button onClick={() => onRefresh(tracker.id)} disabled={refreshing} className="gap-2">
+            <Button onClick={() => onRefresh(tracker.id)} disabled={refreshing} className="gap-2 h-12 min-h-[48px]">
               <RefreshCw className={cn("h-4 w-4", refreshing && "animate-spin")} />
-              {refreshing ? "Fetching live prices..." : "Fetch live prices now"}
+              {refreshing ? "Fetching..." : "Fetch live prices"}
             </Button>
           )}
         </div>
@@ -160,69 +159,72 @@ export function FlightDealsGrid({ tracker, latestSnapshot, onRefresh, refreshing
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.2, delay: Math.min(i * 0.03, 0.3) }}
                 className={cn(
-                  "flex items-center gap-3 rounded-lg border p-3 transition-all hover:shadow-sm",
+                  "rounded-lg border p-3 transition-all hover:shadow-sm",
                   deal.isLowest
                     ? "border-emerald-500/40 bg-emerald-500/5"
                     : "bg-card hover:bg-accent/30"
                 )}
               >
-                {/* Price */}
-                <div className="flex flex-col items-center justify-center min-w-[80px] shrink-0">
-                  <p className={cn(
-                    "text-xl font-bold tabular-nums",
-                    deal.isLowest && "text-emerald-600 dark:text-emerald-400"
-                  )}>
-                    ${deal.price}
-                  </p>
-                  {deal.isLowest && (
-                    <Badge className="text-[9px] py-0 h-4 bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border-emerald-500/30 gap-0.5">
-                      <Sparkles className="h-2.5 w-2.5" /> LOWEST
-                    </Badge>
-                  )}
-                </div>
-
-                {/* Airline + stops */}
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-2">
-                    <p className="font-semibold text-sm truncate">{deal.airline}</p>
-                    {deal.stops === 0 ? (
-                      <Badge variant="outline" className="text-[9px] py-0 h-4 text-emerald-600 dark:text-emerald-400 border-emerald-500/30">
-                        Direct
-                      </Badge>
-                    ) : (
-                      <Badge variant="outline" className="text-[9px] py-0 h-4 text-muted-foreground">
-                        {deal.stops} stop{deal.stops > 1 ? "s" : ""}
+                {/* Mobile: stacked layout, Desktop: horizontal */}
+                <div className="flex items-center gap-3">
+                  {/* Price */}
+                  <div className="flex flex-col items-center justify-center min-w-[70px] sm:min-w-[80px] shrink-0">
+                    <p className={cn(
+                      "text-xl sm:text-2xl font-bold tabular-nums",
+                      deal.isLowest && "text-emerald-600 dark:text-emerald-400"
+                    )}>
+                      ${deal.price}
+                    </p>
+                    {deal.isLowest && (
+                      <Badge className="text-[9px] py-0 h-4 bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border-emerald-500/30 gap-0.5">
+                        <Sparkles className="h-2.5 w-2.5" /> LOWEST
                       </Badge>
                     )}
                   </div>
-                  <div className="flex items-center gap-2 mt-0.5">
-                    <span className={cn("text-[10px] px-1.5 py-0.5 rounded font-medium", sInfo.color)}>
-                      {sInfo.label}
-                    </span>
-                    <span className="text-[10px] text-muted-foreground">
-                      {origin.city} → {dest.city}
-                    </span>
-                  </div>
-                </div>
 
-                {/* Click-to-buy button */}
-                {deal.deepLink ? (
-                  <a
-                    href={deal.deepLink}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="shrink-0 inline-flex items-center gap-1.5 rounded-md bg-primary text-primary-foreground hover:bg-primary/90 px-3 py-2 text-xs font-medium transition-colors"
-                    onClick={(e) => e.stopPropagation()}
-                  >
-                    <ExternalLink className="h-3.5 w-3.5" />
-                    <span className="hidden sm:inline">View deal</span>
-                    <span className="sm:hidden">Open</span>
-                  </a>
-                ) : (
-                  <span className="shrink-0 text-[10px] text-muted-foreground px-3 py-2">
-                    No link
-                  </span>
-                )}
+                  {/* Airline + stops */}
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <p className="font-semibold text-sm truncate">{deal.airline}</p>
+                      {deal.stops === 0 ? (
+                        <Badge variant="outline" className="text-[9px] py-0 h-4 text-emerald-600 dark:text-emerald-400 border-emerald-500/30 shrink-0">
+                          Direct
+                        </Badge>
+                      ) : (
+                        <Badge variant="outline" className="text-[9px] py-0 h-4 text-muted-foreground shrink-0">
+                          {deal.stops} stop{deal.stops > 1 ? "s" : ""}
+                        </Badge>
+                      )}
+                    </div>
+                    <div className="flex items-center gap-2 mt-1">
+                      <span className={cn("text-[10px] px-1.5 py-0.5 rounded font-medium shrink-0", sInfo.color)}>
+                        {sInfo.label}
+                      </span>
+                      <span className="text-[10px] text-muted-foreground truncate">
+                        {origin.city} → {dest.city}
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* Click-to-buy button */}
+                  {deal.deepLink ? (
+                    <a
+                      href={deal.deepLink}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="shrink-0 inline-flex items-center justify-center gap-1.5 rounded-md bg-primary text-primary-foreground hover:bg-primary/90 px-3 sm:px-4 py-2.5 text-xs font-medium transition-colors min-h-[44px] min-w-[44px]"
+                      onClick={(e) => e.stopPropagation()}
+                      aria-label={`View deal for ${deal.airline} at $${deal.price}`}
+                    >
+                      <ExternalLink className="h-3.5 w-3.5" />
+                      <span className="hidden sm:inline">View deal</span>
+                    </a>
+                  ) : (
+                    <span className="shrink-0 text-[10px] text-muted-foreground px-3 py-2.5">
+                      No link
+                    </span>
+                  )}
+                </div>
               </motion.div>
             );
           })}
@@ -232,12 +234,12 @@ export function FlightDealsGrid({ tracker, latestSnapshot, onRefresh, refreshing
       {/* Footer info */}
       {deals.length > 0 && (
         <div className="mt-3 pt-3 border-t text-[10px] text-muted-foreground flex items-center gap-2 flex-wrap">
-          <Clock className="h-3 w-3" />
-          <span>Prices fetched {latestSnapshot ? new Date(latestSnapshot.ts).toLocaleString() : ""}</span>
+          <Clock className="h-3 w-3 shrink-0" />
+          <span>Updated {latestSnapshot ? new Date(latestSnapshot.ts).toLocaleString() : ""}</span>
           <span>·</span>
           <span>{deals.length} options</span>
-          <span>·</span>
-          <span>Click "View deal" to open booking site</span>
+          <span className="hidden sm:inline">·</span>
+          <span className="hidden sm:inline">Tap "View deal" to book</span>
         </div>
       )}
     </Card>

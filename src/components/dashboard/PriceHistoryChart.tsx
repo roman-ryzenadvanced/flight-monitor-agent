@@ -75,10 +75,10 @@ export function PriceHistoryChart({ history, route }: Props) {
             </p>
           </div>
           <Tabs value={range} onValueChange={(v) => setRange(v as typeof range)}>
-            <TabsList>
-              <TabsTrigger value="7d">{t("days7")}</TabsTrigger>
-              <TabsTrigger value="14d">{t("days14")}</TabsTrigger>
-              <TabsTrigger value="30d">{t("days30")}</TabsTrigger>
+            <TabsList className="h-auto">
+              <TabsTrigger value="7d" className="text-xs min-h-[36px]">{t("days7")}</TabsTrigger>
+              <TabsTrigger value="14d" className="text-xs min-h-[36px]">{t("days14")}</TabsTrigger>
+              <TabsTrigger value="30d" className="text-xs min-h-[36px]">{t("days30")}</TabsTrigger>
             </TabsList>
           </Tabs>
         </div>
@@ -98,7 +98,7 @@ export function PriceHistoryChart({ history, route }: Props) {
           </div>
         </div>
 
-        <div className="h-64 w-full" dir="ltr">
+        <div className="h-48 sm:h-64 w-full" dir="ltr">
           <ResponsiveContainer width="100%" height="100%">
             <AreaChart data={data} margin={{ top: 5, right: 5, left: -10, bottom: 0 }}>
               <defs>
@@ -110,9 +110,11 @@ export function PriceHistoryChart({ history, route }: Props) {
               <CartesianGrid strokeDasharray="3 3" stroke="oklch(0.922 0 0)" vertical={false} />
               <XAxis
                 dataKey="date"
-                tick={{ fontSize: 11, fill: "oklch(0.556 0 0)" }}
+                tick={{ fontSize: 10, fill: "oklch(0.556 0 0)" }}
                 tickLine={false}
                 axisLine={{ stroke: "oklch(0.922 0 0)" }}
+                interval="preserveStartEnd"
+                minTickGap={20}
               />
               <YAxis
                 tick={{ fontSize: 11, fill: "oklch(0.556 0 0)" }}
