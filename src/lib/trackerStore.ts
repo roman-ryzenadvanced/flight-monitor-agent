@@ -34,83 +34,16 @@ function genId(): string {
   return `trk_${Date.now().toString(36)}_${Math.random().toString(36).slice(2, 8)}`;
 }
 
-// Default demo trackers seeded on first load (so dashboard isn't empty)
+// No demo trackers — start empty. User adds their own real trackers.
 function defaultTrackers(): Tracker[] {
-  const now = new Date();
-  const inDays = (n: number) => {
-    const d = new Date(now.getTime() + n * 24 * 60 * 60 * 1000);
-    const yyyy = d.getFullYear();
-    const mm = (d.getMonth() + 1).toString().padStart(2, "0");
-    const dd = d.getDate().toString().padStart(2, "0");
-    return `${yyyy}-${mm}-${dd}`;
-  };
-  return [
-    {
-      id: "trk_demo_tlv_jfk",
-      originIata: "TLV",
-      destIata: "JFK",
-      departDate: inDays(38),
-      cabin: "economy",
-      passengers: 1,
-      alertThreshold: 600,
-      active: true,
-      createdAt: new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000).toISOString(),
-      notes: "ניו יורק — חופשת קיץ",
-    },
-    {
-      id: "trk_demo_tlv_bkk",
-      originIata: "TLV",
-      destIata: "BKK",
-      departDate: inDays(62),
-      cabin: "economy",
-      passengers: 2,
-      alertThreshold: 1700,
-      active: true,
-      createdAt: new Date(now.getTime() - 5 * 24 * 60 * 60 * 1000).toISOString(),
-      notes: "תאילנד — טיול ארוך",
-    },
-    {
-      id: "trk_demo_tlv_bcn",
-      originIata: "TLV",
-      destIata: "BCN",
-      departDate: inDays(21),
-      cabin: "economy",
-      passengers: 1,
-      active: true,
-      createdAt: new Date(now.getTime() - 3 * 24 * 60 * 60 * 1000).toISOString(),
-      notes: "ברצלונה — סופשבוע",
-    },
-    {
-      id: "trk_demo_tlv_cpt",
-      originIata: "TLV",
-      destIata: "CPT",
-      departDate: inDays(95),
-      cabin: "economy",
-      passengers: 2,
-      alertThreshold: 950,
-      active: false,
-      createdAt: new Date(now.getTime() - 14 * 24 * 60 * 60 * 1000).toISOString(),
-      notes: "דרום אפריקה — טיול מתוכנן",
-    },
-    {
-      id: "trk_demo_tlv_dps",
-      originIata: "TLV",
-      destIata: "DPS",
-      departDate: inDays(120),
-      cabin: "premium",
-      passengers: 2,
-      active: true,
-      createdAt: new Date(now.getTime() - 10 * 24 * 60 * 60 * 1000).toISOString(),
-      notes: "באלי — ירח דבש",
-    },
-  ];
+  return [];
 }
 
 export const useTrackerStore = create<TrackerStore>()(
   persist(
     (set) => ({
       trackers: defaultTrackers(),
-      selectedId: "trk_demo_tlv_jfk",
+      selectedId: null,
       addTracker: (t) => {
         const tracker: Tracker = {
           ...t,

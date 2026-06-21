@@ -7,10 +7,21 @@ import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { cn } from "@/lib/utils";
-import type { LogEntry, LogLevel } from "@/lib/mock/data";
 import { Info, AlertTriangle, AlertOctagon, Bug, Search } from "lucide-react";
 import { useT } from "@/lib/i18n";
 import type { TranslationKey } from "@/lib/i18n/translations";
+
+// Generic log type — works with both mock LogEntry and real LogRecord
+interface LogItem {
+  id: string;
+  ts: string;
+  level: "info" | "warn" | "error" | "debug";
+  source: string;
+  message: string;
+  context?: Record<string, unknown>;
+}
+
+type LogLevel = LogItem["level"];
 
 const levelKeyMap: Record<LogLevel, TranslationKey> = {
   info: "info",
@@ -31,7 +42,7 @@ function formatTime(iso: string): string {
   return d.toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit", second: "2-digit" });
 }
 
-export function LogsViewer({ logs }: { logs: LogEntry[] }) {
+export function LogsViewer({ logs }: { logs: LogItem[] }) {
   const t = useT();
   const [levelFilter, setLevelFilter] = useState<string>("all");
   const [sourceFilter, setSourceFilter] = useState<string>("all");
