@@ -14,25 +14,20 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Z.ai Code Scaffold - AI-Powered Development",
-  description: "Modern Next.js scaffold optimized for AI-powered development with Z.ai. Built with TypeScript, Tailwind CSS, and shadcn/ui.",
-  keywords: ["Z.ai", "Next.js", "TypeScript", "Tailwind CSS", "shadcn/ui", "AI development", "React"],
-  authors: [{ name: "Z.ai Team" }],
-  icons: {
-    icon: "https://z-cdn.chatglm.cn/z-ai/static/logo.svg",
-  },
-  openGraph: {
-    title: "Z.ai Code Scaffold",
-    description: "AI-powered development with modern React stack",
-    url: "https://chat.z.ai",
-    siteName: "Z.ai",
-    type: "website",
-  },
-  twitter: {
-    card: "summary_large_image",
-    title: "Z.ai Code Scaffold",
-    description: "AI-powered development with modern React stack",
-  },
+  title: "סוכן ניטור טיסות | Flight Monitor Agent",
+  description:
+    "דאשבורד לניטור מחירי טיסות 24/7 — סריקה אוטומטית, היסטוריית מחירים, זיהוי דילים והתראות יומיות. TypeScript · Playwright · SQLite · Docker.",
+  keywords: [
+    "flight monitor",
+    "flight deals",
+    "price tracking",
+    "Playwright",
+    "TypeScript",
+    "ניטור טיסות",
+    "דילים",
+    "מעקב מחירים",
+  ],
+  authors: [{ name: "Flight Monitor Agent" }],
 };
 
 export default function RootLayout({
@@ -41,7 +36,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" suppressHydrationWarning>
+    <html lang="he" dir="rtl" suppressHydrationWarning>
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased bg-background text-foreground`}
       >
