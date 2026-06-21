@@ -24,13 +24,14 @@ import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
 import { ccToFlag, airportByIata } from "@/lib/airports";
 import {
-  cabinLabels,
   daysToDeparture,
-  formatHebrewDateShort,
+  formatDateShort,
   generatePriceData,
+  getCabinLabel,
   type Tracker,
 } from "@/lib/priceEngine";
 import { useTrackerStore } from "@/lib/trackerStore";
+import { useT, useI18n } from "@/lib/i18n";
 import { Sparkline } from "./Sparkline";
 
 interface Props {
@@ -47,6 +48,7 @@ const trendIcon = {
 };
 
 export function TrackerCard({ tracker, index = 0, selected, onSelect }: Props) {
+  const t = useT();
   const removeTracker = useTrackerStore((s) => s.removeTracker);
   const toggleActive = useTrackerStore((s) => s.toggleActive);
 
@@ -94,14 +96,14 @@ export function TrackerCard({ tracker, index = 0, selected, onSelect }: Props) {
         {isDeal && tracker.active && (
           <div className="absolute top-2 left-2">
             <Badge className="bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border-emerald-500/30 gap-1">
-              <Sparkles className="h-3 w-3" /> דיל
+              <Sparkles className="h-3 w-3" /> {t("deal")}
             </Badge>
           </div>
         )}
         {hitsAlert && (
           <div className="absolute top-2 left-2">
             <Badge className="bg-amber-500/15 text-amber-600 dark:text-amber-400 border-amber-500/30 gap-1">
-              <AlertCircle className="h-3 w-3" /> מחיר מטרה!
+              <AlertCircle className="h-3 w-3" /> {t("targetHit")}
             </Badge>
           </div>
         )}
@@ -142,7 +144,7 @@ export function TrackerCard({ tracker, index = 0, selected, onSelect }: Props) {
               priceData.dropPct < 0 ? "text-emerald-600 dark:text-emerald-400" : "text-rose-600 dark:text-rose-400"
             )}>
               <Icon className="h-3 w-3" />
-              {priceData.dropPct < 0 ? "▼" : "▲"} {Math.abs(priceData.dropPct)}% מול ממוצע
+              {priceData.dropPct < 0 ? "▼" : "▲"} {Math.abs(priceData.dropPct)}% {t("vsAverage")}
             </p>
           </div>
           {/* Sparkline */}
@@ -157,15 +159,15 @@ export function TrackerCard({ tracker, index = 0, selected, onSelect }: Props) {
         {/* Stats row */}
         <div className="grid grid-cols-3 gap-1 text-[10px] mb-3">
           <div className="rounded bg-muted/50 px-1.5 py-1 text-center">
-            <p className="text-muted-foreground">נמוך</p>
+            <p className="text-muted-foreground">{t("low")}</p>
             <p className="font-bold tabular-nums text-emerald-600 dark:text-emerald-400">${priceData.lowest}</p>
           </div>
           <div className="rounded bg-muted/50 px-1.5 py-1 text-center">
-            <p className="text-muted-foreground">ממוצע</p>
+            <p className="text-muted-foreground">{t("average")}</p>
             <p className="font-bold tabular-nums">${priceData.average}</p>
           </div>
           <div className="rounded bg-muted/50 px-1.5 py-1 text-center">
-            <p className="text-muted-foreground">גבוה</p>
+            <p className="text-muted-foreground">{t("high")}</p>
             <p className="font-bold tabular-nums text-rose-600 dark:text-rose-400">${priceData.highest}</p>
           </div>
         </div>
@@ -175,15 +177,15 @@ export function TrackerCard({ tracker, index = 0, selected, onSelect }: Props) {
           <div className="flex items-center gap-2 flex-wrap">
             <span className="flex items-center gap-1">
               <Calendar className="h-3 w-3" />
-              {formatHebrewDateShort(tracker.departDate)}
+              {formatDateShort(tracker.departDate, useI18n.getState().lang)}
             </span>
             <span>·</span>
             <span className="flex items-center gap-1">
               <Clock className="h-3 w-3" />
-              {dtd} ימים
+              {dtd} {t("daysToFlight")}
             </span>
             <span>·</span>
-            <span>{cabinLabels[tracker.cabin]}</span>
+            <span>{getCabinLabel(tracker.cabin, useI18n.getState().lang)}</span>
             {tracker.passengers > 1 && (
               <>
                 <span>·</span>
@@ -200,9 +202,9 @@ export function TrackerCard({ tracker, index = 0, selected, onSelect }: Props) {
             className="h-6 w-6 text-muted-foreground hover:text-rose-600"
             onClick={(e) => {
               e.stopPropagation();
-              if (confirm("למחוק את הטראקר?")) removeTracker(tracker.id);
+              if (confirm(t("deleteConfirm"))) removeTracker(tracker.id);
             }}
-            title="מחק"
+            title={t("delete")}
           >
             <Trash2 className="h-3 w-3" />
           </Button>

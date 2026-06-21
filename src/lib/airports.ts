@@ -14,15 +14,15 @@ export interface Airport {
   tz?: string;
 }
 
-// Region labels (Hebrew + English)
-export const regionLabels: Record<Airport["region"], { he: string; en: string }> = {
-  NA: { he: "צפון אמריקה", en: "North America" },
-  SA: { he: "דרום אמריקה", en: "South America" },
-  EU: { he: "אירופה", en: "Europe" },
-  ME: { he: "מזרח תיכון", en: "Middle East" },
-  AF: { he: "אפריקה", en: "Africa" },
-  AS: { he: "אסיה", en: "Asia" },
-  OC: { he: "אוקיאניה", en: "Oceania" },
+// Region labels (multi-language: en, ru, ka, he, ar, es)
+export const regionLabels: Record<Airport["region"], { en: string; ru: string; ka: string; he: string; ar: string; es: string }> = {
+  NA: { en: "North America", ru: "Северная Америка", ka: "ჩრდილოეთ ამერიკა", he: "צפון אמריקה", ar: "أمريكا الشمالية", es: "América del Norte" },
+  SA: { en: "South America", ru: "Южная Америка", ka: "სამხრეთ ამერიკა", he: "דרום אמריקה", ar: "أمريكا الجنوبية", es: "América del Sur" },
+  EU: { en: "Europe", ru: "Европа", ka: "ევროპა", he: "אירופה", ar: "أوروبا", es: "Europa" },
+  ME: { en: "Middle East", ru: "Ближний Восток", ka: "ახლო აღმოსავლეთი", he: "מזרח תיכון", ar: "الشرق الأوسط", es: "Oriente Medio" },
+  AF: { en: "Africa", ru: "Африка", ka: "აფრიკა", he: "אפריקה", ar: "أفريقيا", es: "África" },
+  AS: { en: "Asia", ru: "Азия", ka: "აზია", he: "אסיה", ar: "آسيا", es: "Asia" },
+  OC: { en: "Oceania", ru: "Океания", ka: "ოკეანეთი", he: "אוקיאניה", ar: "أوقيانوسيا", es: "Oceanía" },
 };
 
 // Country code → flag emoji

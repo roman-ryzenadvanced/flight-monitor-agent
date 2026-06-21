@@ -43,3 +43,51 @@ Artifacts:
 - `/home/z/my-project/src/app/api/forecast/route.ts` — Next.js forecast route with fallback
 - `/home/z/my-project/download/dashboard-*.png` — verification screenshots
 - Vercel: https://my-project-three-zeta-61.vercel.app/
+
+---
+Task ID: 2
+Agent: Main (Super Z)
+Task: Add multi-airport tracker system (any airport worldwide) and full multi-language support (EN/RU/KA/HE/AR/ES) with AI-translated UI strings and forecast reasoning.
+
+Work Log:
+- Built global airport database (~200 airports across all continents) at src/lib/airports.ts with IATA codes, coordinates, regions, and multilingual region labels
+- Built deterministic price engine at src/lib/priceEngine.ts that generates plausible flight prices for ANY airport pair based on distance (haversine), seasonal factors, advance booking, cabin class, and passenger count — same inputs always produce same outputs (seeded by route hash)
+- Built Zustand tracker store with localStorage persistence at src/lib/trackerStore.ts — users can add/remove/pause trackers, with 5 default demo trackers seeded on first load
+- Built searchable AirportCombobox component with ~200 airports grouped by region, supports search by IATA/city/country/name
+- Built NewTrackerDialog modal with origin/destination pickers, round-trip toggle, cabin class (economy/premium/business/first), passenger counter, target price alert, and notes
+- Built TrackerCard with mini sparkline, price stats (low/avg/high), deal/target badges, and active toggle
+- Built i18n infrastructure:
+  - src/lib/i18n/translations.ts: Full translation dictionaries for 6 languages (EN/RU/KA/HE/AR/ES) — all AI-translated
+  - src/lib/i18n/index.ts: Zustand store with localStorage persistence + useT() hook
+  - LanguageSwitcher component with flag + code display
+  - LanguageDirSync component that updates <html dir/lang> attributes
+  - Pre-paint script in layout.tsx to set dir/lang from localStorage before React hydration (avoids RTL flash)
+- Updated all components to use translation keys: StatCard, ScannerPanel, ProviderCard, AlertCard, TrackerCard, NewTrackerDialog, PriceHistoryChart, ForecastPanel, LogsViewer, DailySummaryCard, AirportCombobox
+- Updated forecast API route to accept `lang` parameter and generate reasoning in the user's selected language using 6-language template system
+- Updated Python TimesFM service to accept `lang` parameter (TS layer overrides reasoning with proper translations)
+- Tested all 6 languages via API — all produce correctly localized reasoning
+- Tested in browser: English (LTR), Hebrew (RTL), Russian (LTR), Georgian (LTR), Arabic (RTL), Spanish (LTR) — all work correctly
+- Lint passes cleanly
+- Deployed to Vercel: https://my-project-three-zeta-61.vercel.app/
+
+Stage Summary:
+- Full multi-language support (6 languages) with automatic RTL/LTR switching
+- Global airport picker with ~200 airports — users can track any airport pair worldwide
+- Persistent trackers saved to localStorage — survive page reloads
+- 5 default demo trackers seeded on first visit
+- AI reasoning (TimesFM forecasts) generated in user's selected language
+- Both local sandbox (TimesFM 2.5) and Vercel (statistical fallback) deployments working
+- All 6 languages verified working in browser
+
+Artifacts:
+- src/lib/airports.ts — global airport database
+- src/lib/priceEngine.ts — deterministic price engine
+- src/lib/trackerStore.ts — Zustand tracker store
+- src/lib/i18n/translations.ts — 6-language translations
+- src/lib/i18n/index.ts — i18n store + hooks
+- src/components/dashboard/AirportCombobox.tsx — searchable airport picker
+- src/components/dashboard/NewTrackerDialog.tsx — new tracker modal
+- src/components/dashboard/TrackerCard.tsx — tracker card with sparkline
+- src/components/dashboard/LanguageSwitcher.tsx — language dropdown
+- src/components/dashboard/LanguageDirSync.tsx — RTL/LTR sync
+- Vercel: https://my-project-three-zeta-61.vercel.app/

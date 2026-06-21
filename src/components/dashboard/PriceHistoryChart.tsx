@@ -6,8 +6,6 @@ import {
   Area,
   AreaChart,
   CartesianGrid,
-  Line,
-  LineChart,
   ReferenceLine,
   ResponsiveContainer,
   Tooltip,
@@ -16,6 +14,7 @@ import {
 } from "recharts";
 import { Card } from "@/components/ui/card";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { useT, useI18n } from "@/lib/i18n";
 import type { PriceHistory, FlightRoute } from "@/lib/mock/data";
 
 interface Props {
@@ -23,23 +22,37 @@ interface Props {
   route?: FlightRoute;
 }
 
-function formatDate(ts: string): string {
+const dateLocaleMap: Record<string, string> = {
+  en: "en-US",
+  ru: "ru-RU",
+  ka: "ka-GE",
+  he: "he-IL",
+  ar: "ar",
+  es: "es-ES",
+};
+
+function formatDate(ts: string, lang: string): string {
   const d = new Date(ts);
-  return `${d.getDate().toString().padStart(2, "0")}/${(d.getMonth() + 1).toString().padStart(2, "0")}`;
+  return d.toLocaleDateString(dateLocaleMap[lang] || "en-US", {
+    day: "2-digit",
+    month: "2-digit",
+  });
 }
 
 export function PriceHistoryChart({ history, route }: Props) {
+  const t = useT();
+  const lang = useI18n((s) => s.lang);
   const [range, setRange] = useState<"7d" | "14d" | "30d">("30d");
 
   const data = useMemo(() => {
     const days = range === "7d" ? 7 : range === "14d" ? 14 : 30;
     return history.points.slice(-days - 1).map((p) => ({
-      date: formatDate(p.ts),
+      date: formatDate(p.ts, lang),
       price: p.price,
       provider: p.provider,
-      fullDate: new Date(p.ts).toLocaleDateString("he-IL"),
+      fullDate: new Date(p.ts).toLocaleDateString(dateLocaleMap[lang] || "en-US"),
     }));
-  }, [history, range]);
+  }, [history, range, lang]);
 
   const avg = route?.averagePrice ?? history.points.reduce((s, p) => s + p.price, 0) / history.points.length;
   const lowest = route?.lowestPrice ?? Math.min(...history.points.map((p) => p.price));
@@ -55,32 +68,32 @@ export function PriceHistoryChart({ history, route }: Props) {
         <div className="flex items-start justify-between mb-4 flex-wrap gap-3">
           <div>
             <h3 className="font-semibold text-lg">
-              היסטוריית מחירים · {history.route}
+              {t("priceHistory")} · {history.route}
             </h3>
             <p className="text-sm text-muted-foreground mt-0.5">
-              נתונים מ-SQLite · {history.points.length} נקודות נאספו
+              {t("dataFromSqlite")} {history.points.length} {t("pointsCollected")}
             </p>
           </div>
           <Tabs value={range} onValueChange={(v) => setRange(v as typeof range)}>
             <TabsList>
-              <TabsTrigger value="7d">7 ימים</TabsTrigger>
-              <TabsTrigger value="14d">14 ימים</TabsTrigger>
-              <TabsTrigger value="30d">30 ימים</TabsTrigger>
+              <TabsTrigger value="7d">{t("days7")}</TabsTrigger>
+              <TabsTrigger value="14d">{t("days14")}</TabsTrigger>
+              <TabsTrigger value="30d">{t("days30")}</TabsTrigger>
             </TabsList>
           </Tabs>
         </div>
 
         <div className="grid grid-cols-3 gap-2 mb-4">
           <div className="rounded-lg bg-muted/50 p-2 text-center">
-            <p className="text-xs text-muted-foreground">נמוך</p>
+            <p className="text-xs text-muted-foreground">{t("low")}</p>
             <p className="font-bold tabular-nums text-emerald-600 dark:text-emerald-400">${lowest}</p>
           </div>
           <div className="rounded-lg bg-muted/50 p-2 text-center">
-            <p className="text-xs text-muted-foreground">ממוצע</p>
+            <p className="text-xs text-muted-foreground">{t("average")}</p>
             <p className="font-bold tabular-nums">${Math.round(avg)}</p>
           </div>
           <div className="rounded-lg bg-muted/50 p-2 text-center">
-            <p className="text-xs text-muted-foreground">גבוה</p>
+            <p className="text-xs text-muted-foreground">{t("high")}</p>
             <p className="font-bold tabular-nums text-rose-600 dark:text-rose-400">${highest}</p>
           </div>
         </div>
@@ -113,10 +126,10 @@ export function PriceHistoryChart({ history, route }: Props) {
                   borderRadius: 8,
                   border: "1px solid oklch(0.922 0 0)",
                   fontSize: 12,
-                  direction: "rtl",
+                  direction: lang === "he" || lang === "ar" ? "rtl" : "ltr",
                 }}
                 labelStyle={{ fontWeight: 600 }}
-                formatter={(value: number) => [`$${value}`, "מחיר"]}
+                formatter={(value: number) => [`$${value}`, t("priceHistory").split(" ")[0]]}
                 labelFormatter={(label, payload) => {
                   const p = payload?.[0]?.payload;
                   return p ? `${p.fullDate} · ${p.provider}` : label;
@@ -126,7 +139,6 @@ export function PriceHistoryChart({ history, route }: Props) {
                 y={avg}
                 stroke="oklch(0.556 0 0)"
                 strokeDasharray="5 5"
-                label={{ value: "ממוצע", position: "insideTopRight", fontSize: 10, fill: "oklch(0.556 0 0)" }}
               />
               <Area
                 type="monotone"

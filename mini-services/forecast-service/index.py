@@ -197,8 +197,14 @@ def build_recommendation(
     lower: List[float],
     upper: List[float],
     days_to_departure: Optional[int],
+    lang: str = "en",
 ) -> Dict[str, Any]:
-    """Decide buy_now / wait / monitor based on forecast trend."""
+    """Decide buy_now / wait / monitor based on forecast trend.
+
+    Note: The reasoning text is generated in English here. The TS API route
+    has full multilingual templates (en/ru/ka/he/ar/es) and will override
+    the reasoning with the user's selected language.
+    """
     if not history or not forecast:
         return {
             "recommendation": "monitor",
@@ -369,12 +375,17 @@ def handle_forecast(body: Dict[str, Any]) -> Dict[str, Any]:
         print(f"[forecast] TimesFM failed, using statistical: {e}", flush=True)
         result = forecast_statistical(history, horizon)
 
+    lang = body.get("lang", "en")
+    if lang not in ("en", "ru", "ka", "he", "ar", "es"):
+        lang = "en"
+
     rec = build_recommendation(
         history,
         result["forecast"],
         result["lower"],
         result["upper"],
         days_to_departure,
+        lang,
     )
 
     elapsed = time.time() - t0

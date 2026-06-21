@@ -249,3 +249,51 @@ export function formatHebrewDateShort(dateStr: string): string {
     return dateStr;
   }
 }
+
+// Locale map for multi-language date formatting
+const dateLocaleMap: Record<string, string> = {
+  en: "en-US",
+  ru: "ru-RU",
+  ka: "ka-GE",
+  he: "he-IL",
+  ar: "ar",
+  es: "es-ES",
+};
+
+// Format date in the user's selected language
+export function formatDateShort(dateStr: string, lang: string = "en"): string {
+  try {
+    const d = new Date(dateStr);
+    return d.toLocaleDateString(dateLocaleMap[lang] || "en-US", {
+      day: "numeric",
+      month: "short",
+    });
+  } catch {
+    return dateStr;
+  }
+}
+
+export function formatDateLong(dateStr: string, lang: string = "en"): string {
+  try {
+    const d = new Date(dateStr);
+    return d.toLocaleDateString(dateLocaleMap[lang] || "en-US", {
+      day: "numeric",
+      month: "long",
+      year: "numeric",
+    });
+  } catch {
+    return dateStr;
+  }
+}
+
+// Multi-language cabin labels
+const cabinLabelMap: Record<CabinClass, Record<string, string>> = {
+  economy: { en: "Economy", ru: "Эконом", ka: "ეკონომი", he: "תיירים", ar: "اقتصادية", es: "Económica" },
+  premium: { en: "Premium", ru: "Премиум", ka: "პრემიუმი", he: "פרימיום", ar: "ممتازة", es: "Premium" },
+  business: { en: "Business", ru: "Бизнес", ka: "ბიზნესი", he: "עסקים", ar: "أعمال", es: "Negocios" },
+  first: { en: "First", ru: "Первый", ka: "პირველი", he: "ראשונה", ar: "أولى", es: "Primera" },
+};
+
+export function getCabinLabel(cabin: CabinClass, lang: string = "en"): string {
+  return cabinLabelMap[cabin]?.[lang] || cabinLabelMap[cabin].en;
+}

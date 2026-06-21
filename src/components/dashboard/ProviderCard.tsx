@@ -3,47 +3,57 @@
 import { motion } from "framer-motion";
 import { cn } from "@/lib/utils";
 import type { Provider } from "@/lib/mock/data";
+import { useT } from "@/lib/i18n";
+import type { TranslationKey } from "@/lib/i18n/translations";
 
-const statusMap = {
-  active: { label: "פעיל", color: "bg-emerald-500", text: "text-emerald-600 dark:text-emerald-400", ring: "ring-emerald-500/20" },
-  cooldown: { label: "Cooldown", color: "bg-amber-500", text: "text-amber-600 dark:text-amber-400", ring: "ring-amber-500/20" },
-  blocked: { label: "חסום", color: "bg-rose-500", text: "text-rose-600 dark:text-rose-400", ring: "ring-rose-500/20" },
-  error: { label: "שגיאה", color: "bg-rose-500", text: "text-rose-600 dark:text-rose-400", ring: "ring-rose-500/20" },
+const statusKeyMap: Record<Provider["status"], TranslationKey> = {
+  active: "active",
+  cooldown: "inCooldown",
+  blocked: "expired",
+  error: "errorStatus",
 };
 
-const antiBotLabels = {
-  none: "—",
-  basic: "Basic",
-  captcha: "CAPTCHA",
-  advanced: "מתקדם",
+const antiBotKeyMap: Record<Provider["antiBotLevel"], TranslationKey> = {
+  none: "none",
+  basic: "basic",
+  captcha: "captcha",
+  advanced: "advanced",
 };
 
-function timeAgo(iso: string): string {
+const statusColors = {
+  active: { label: "bg-emerald-500", text: "text-emerald-600 dark:text-emerald-400", ring: "ring-emerald-500/20" },
+  cooldown: { label: "bg-amber-500", text: "text-amber-600 dark:text-amber-400", ring: "ring-amber-500/20" },
+  blocked: { label: "bg-rose-500", text: "text-rose-600 dark:text-rose-400", ring: "ring-rose-500/20" },
+  error: { label: "bg-rose-500", text: "text-rose-600 dark:text-rose-400", ring: "ring-rose-500/20" },
+};
+
+function timeAgo(iso: string, t: (k: TranslationKey) => string): string {
   const diff = Date.now() - new Date(iso).getTime();
   const mins = Math.floor(diff / 60000);
-  if (mins < 1) return "עכשיו";
-  if (mins < 60) return `לפני ${mins} דק׳`;
+  if (mins < 1) return t("now");
+  if (mins < 60) return `${mins} ${t("minAgo")}`;
   const hours = Math.floor(mins / 60);
-  if (hours < 24) return `לפני ${hours} שע׳`;
+  if (hours < 24) return `${hours} ${t("hourAgo")}`;
   const days = Math.floor(hours / 24);
-  return `לפני ${days} ימים`;
+  return `${days} ${t("dayAgo")}`;
 }
 
-function timeUntil(iso: string | null): string | null {
+function timeUntil(iso: string | null, t: (k: TranslationKey) => string): string | null {
   if (!iso) return null;
   const diff = new Date(iso).getTime() - Date.now();
-  if (diff <= 0) return "פג";
+  if (diff <= 0) return t("expired");
   const mins = Math.floor(diff / 60000);
-  if (mins < 60) return `עוד ${mins} דק׳`;
+  if (mins < 60) return `${mins} ${t("moreMinutes")}`;
   const hours = Math.floor(mins / 60);
-  if (hours < 24) return `עוד ${hours} שע׳`;
+  if (hours < 24) return `${hours} ${t("moreHours")}`;
   const days = Math.floor(hours / 24);
-  return `עוד ${days} ימים`;
+  return `${days} ${t("moreDays")}`;
 }
 
 export function ProviderCard({ provider, index = 0 }: { provider: Provider; index?: number }) {
-  const status = statusMap[provider.status];
-  const cooldownLeft = timeUntil(provider.cooldownUntil);
+  const t = useT();
+  const status = statusColors[provider.status];
+  const cooldownLeft = timeUntil(provider.cooldownUntil, t);
 
   return (
     <motion.div
@@ -57,43 +67,43 @@ export function ProviderCard({ provider, index = 0 }: { provider: Provider; inde
           <div className="flex items-center gap-2">
             <h4 className="font-semibold truncate">{provider.name}</h4>
             <span className={cn("text-[10px] font-medium px-1.5 py-0.5 rounded-full ring-1", status.text, status.ring)}>
-              {status.label}
+              {t(statusKeyMap[provider.status])}
             </span>
           </div>
           <p className="text-xs text-muted-foreground truncate">{provider.domain}</p>
         </div>
-        <span className={cn("h-2 w-2 shrink-0 rounded-full", status.color)} />
+        <span className={cn("h-2 w-2 shrink-0 rounded-full", status.label)} />
       </div>
 
       <div className="grid grid-cols-2 gap-2 text-xs mb-3">
         <div className="rounded-md bg-muted/50 p-2">
-          <p className="text-muted-foreground">אחוז הצלחה</p>
+          <p className="text-muted-foreground">{t("successRate")}</p>
           <p className={cn("font-semibold tabular-nums", provider.successRate >= 85 ? "text-emerald-600 dark:text-emerald-400" : provider.successRate >= 60 ? "text-amber-600 dark:text-amber-400" : "text-rose-600 dark:text-rose-400")}>
             {provider.successRate}%
           </p>
         </div>
         <div className="rounded-md bg-muted/50 p-2">
-          <p className="text-muted-foreground">זמן תגובה ממוצע</p>
+          <p className="text-muted-foreground">{t("avgResponse")}</p>
           <p className="font-semibold tabular-nums">{provider.avgResponseMs}ms</p>
         </div>
         <div className="rounded-md bg-muted/50 p-2">
-          <p className="text-muted-foreground">סריקות</p>
+          <p className="text-muted-foreground">{t("scans")}</p>
           <p className="font-semibold tabular-nums">{provider.totalScans.toLocaleString()}</p>
         </div>
         <div className="rounded-md bg-muted/50 p-2">
-          <p className="text-muted-foreground">Anti-Bot</p>
-          <p className="font-semibold">{antiBotLabels[provider.antiBotLevel]}</p>
+          <p className="text-muted-foreground">{t("antiBot")}</p>
+          <p className="font-semibold">{t(antiBotKeyMap[provider.antiBotLevel])}</p>
         </div>
       </div>
 
       <div className="space-y-1 text-xs text-muted-foreground">
         <div className="flex justify-between">
-          <span>סריקה אחרונה</span>
-          <span className="text-foreground">{timeAgo(provider.lastScan)}</span>
+          <span>{t("lastScan")}</span>
+          <span className="text-foreground">{timeAgo(provider.lastScan, t)}</span>
         </div>
         {cooldownLeft && (
           <div className="flex justify-between">
-            <span>Cooldown נותר</span>
+            <span>{t("cooldownLeft")}</span>
             <span className="text-amber-600 dark:text-amber-400 font-medium">{cooldownLeft}</span>
           </div>
         )}

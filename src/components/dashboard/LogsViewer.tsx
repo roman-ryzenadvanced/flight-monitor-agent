@@ -9,20 +9,30 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { cn } from "@/lib/utils";
 import type { LogEntry, LogLevel } from "@/lib/mock/data";
 import { Info, AlertTriangle, AlertOctagon, Bug, Search } from "lucide-react";
+import { useT } from "@/lib/i18n";
+import type { TranslationKey } from "@/lib/i18n/translations";
 
-const levelMap: Record<LogLevel, { label: string; icon: typeof Info; color: string; bg: string }> = {
-  info: { label: "INFO", icon: Info, color: "text-sky-600 dark:text-sky-400", bg: "bg-sky-500/10" },
-  warn: { label: "WARN", icon: AlertTriangle, color: "text-amber-600 dark:text-amber-400", bg: "bg-amber-500/10" },
-  error: { label: "ERROR", icon: AlertOctagon, color: "text-rose-600 dark:text-rose-400", bg: "bg-rose-500/10" },
-  debug: { label: "DEBUG", icon: Bug, color: "text-muted-foreground", bg: "bg-muted" },
+const levelKeyMap: Record<LogLevel, TranslationKey> = {
+  info: "info",
+  warn: "warn",
+  error: "errorStatus",
+  debug: "debug",
+};
+
+const levelStyle: Record<LogLevel, { icon: typeof Info; color: string; bg: string }> = {
+  info: { icon: Info, color: "text-sky-600 dark:text-sky-400", bg: "bg-sky-500/10" },
+  warn: { icon: AlertTriangle, color: "text-amber-600 dark:text-amber-400", bg: "bg-amber-500/10" },
+  error: { icon: AlertOctagon, color: "text-rose-600 dark:text-rose-400", bg: "bg-rose-500/10" },
+  debug: { icon: Bug, color: "text-muted-foreground", bg: "bg-muted" },
 };
 
 function formatTime(iso: string): string {
   const d = new Date(iso);
-  return d.toLocaleTimeString("he-IL", { hour: "2-digit", minute: "2-digit", second: "2-digit" });
+  return d.toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit", second: "2-digit" });
 }
 
 export function LogsViewer({ logs }: { logs: LogEntry[] }) {
+  const t = useT();
   const [levelFilter, setLevelFilter] = useState<string>("all");
   const [sourceFilter, setSourceFilter] = useState<string>("all");
   const [search, setSearch] = useState("");
@@ -45,15 +55,15 @@ export function LogsViewer({ logs }: { logs: LogEntry[] }) {
     <Card className="p-5">
       <div className="flex items-start justify-between mb-4 flex-wrap gap-3">
         <div>
-          <h3 className="font-semibold text-lg">לוגים</h3>
-          <p className="text-sm text-muted-foreground">{filtered.length} מתוך {logs.length} רשומות</p>
+          <h3 className="font-semibold text-lg">{t("logs")}</h3>
+          <p className="text-sm text-muted-foreground">{filtered.length} {t("recordsOf")} {logs.length}</p>
         </div>
         <div className="flex items-center gap-2 flex-wrap">
           <div className="relative">
             <Search className="absolute right-2 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
             <input
               type="text"
-              placeholder="חיפוש…"
+              placeholder={t("search")}
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               className="h-8 w-36 rounded-md border bg-transparent pr-7 pl-2 text-xs"
@@ -64,11 +74,11 @@ export function LogsViewer({ logs }: { logs: LogEntry[] }) {
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="all">כל הרמות</SelectItem>
-              <SelectItem value="info">INFO</SelectItem>
-              <SelectItem value="warn">WARN</SelectItem>
-              <SelectItem value="error">ERROR</SelectItem>
-              <SelectItem value="debug">DEBUG</SelectItem>
+              <SelectItem value="all">{t("allLevels")}</SelectItem>
+              <SelectItem value="info">{t("info")}</SelectItem>
+              <SelectItem value="warn">{t("warn")}</SelectItem>
+              <SelectItem value="error">{t("errorStatus")}</SelectItem>
+              <SelectItem value="debug">{t("debug")}</SelectItem>
             </SelectContent>
           </Select>
           <Select value={sourceFilter} onValueChange={setSourceFilter}>
@@ -77,7 +87,7 @@ export function LogsViewer({ logs }: { logs: LogEntry[] }) {
             </SelectTrigger>
             <SelectContent>
               {sources.map((s) => (
-                <SelectItem key={s} value={s}>{s === "all" ? "כל המקורות" : s}</SelectItem>
+                <SelectItem key={s} value={s}>{s === "all" ? t("allSources") : s}</SelectItem>
               ))}
             </SelectContent>
           </Select>
@@ -87,7 +97,7 @@ export function LogsViewer({ logs }: { logs: LogEntry[] }) {
       <ScrollArea className="h-96 rounded-md border">
         <div className="divide-y" dir="ltr">
           {filtered.map((log, idx) => {
-            const L = levelMap[log.level];
+            const L = levelStyle[log.level];
             const Icon = L.icon;
             return (
               <motion.div
@@ -104,12 +114,12 @@ export function LogsViewer({ logs }: { logs: LogEntry[] }) {
                   <Icon className={cn("h-3 w-3", L.color)} />
                 </div>
                 <Badge variant="outline" className="text-[9px] py-0 h-4 shrink-0 font-mono">
-                  {L.label}
+                  {t(levelKeyMap[log.level])}
                 </Badge>
                 <span className="text-[10px] text-muted-foreground shrink-0 mt-0.5 font-mono">
                   [{log.source}]
                 </span>
-                <span className="text-xs leading-relaxed break-words" dir="rtl">
+                <span className="text-xs leading-relaxed break-words" dir="auto">
                   {log.message}
                 </span>
               </motion.div>
@@ -117,7 +127,7 @@ export function LogsViewer({ logs }: { logs: LogEntry[] }) {
           })}
           {filtered.length === 0 && (
             <div className="p-8 text-center text-sm text-muted-foreground">
-              אין רשומות מתאימות
+              {t("noMatchingRecords")}
             </div>
           )}
         </div>

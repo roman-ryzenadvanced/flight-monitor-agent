@@ -2,12 +2,15 @@
 
 import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
+import { Brain, Loader2, TrendingDown, Clock, Sparkles } from "lucide-react";
+import { cn } from "@/lib/utils";
+import { useT, useI18n } from "@/lib/i18n";
+import type { TranslationKey } from "@/lib/i18n/translations";
 import {
   Area,
   AreaChart,
   CartesianGrid,
   Line,
-  ReferenceLine,
   ResponsiveContainer,
   Tooltip,
   XAxis,
@@ -15,8 +18,6 @@ import {
 } from "recharts";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Brain, Loader2, TrendingDown, TrendingUp, Clock, Sparkles } from "lucide-react";
-import { cn } from "@/lib/utils";
 import type { PriceHistory, FlightRoute } from "@/lib/mock/data";
 
 interface ForecastPoint {
@@ -42,19 +43,22 @@ interface Props {
   route?: FlightRoute;
 }
 
-const recommendationMap = {
+const recKeyMap: Record<ForecastResult["recommendation"], TranslationKey> = {
+  buy_now: "buyNow",
+  wait: "wait",
+  monitor: "keepMonitoring",
+};
+
+const recStyleMap = {
   buy_now: {
-    label: "כדאי להזמין עכשיו",
     color: "bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border-emerald-500/30",
     icon: Sparkles,
   },
   wait: {
-    label: "כדאי לחכות",
     color: "bg-amber-500/15 text-amber-600 dark:text-amber-400 border-amber-500/30",
     icon: Clock,
   },
   monitor: {
-    label: "המשך מעקב",
     color: "bg-sky-500/15 text-sky-600 dark:text-sky-400 border-sky-500/30",
     icon: TrendingDown,
   },
@@ -66,6 +70,8 @@ function formatDate(ts: string): string {
 }
 
 export function ForecastPanel({ history, route }: Props) {
+  const t = useT();
+  const lang = useI18n((s) => s.lang);
   const [forecast, setForecast] = useState<ForecastResult | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -84,7 +90,8 @@ export function ForecastPanel({ history, route }: Props) {
             history: history.points,
             routeId: history.routeId,
             horizon: 14,
-            route: route,
+            lang,
+            route,
           }),
           signal: reqController.signal,
         });
@@ -96,7 +103,7 @@ export function ForecastPanel({ history, route }: Props) {
         }
       } catch (e) {
         if (!cancelled) {
-          setError(e instanceof Error ? e.message : "שגיאה בתחזית");
+          setError(e instanceof Error ? e.message : t("forecastFailed"));
         }
       } finally {
         if (!cancelled) setLoading(false);
@@ -110,7 +117,7 @@ export function ForecastPanel({ history, route }: Props) {
       cancelled = true;
       reqController?.abort();
     };
-  }, [history, route]);
+  }, [history, route, lang]);
 
   return (
     <motion.div
@@ -123,10 +130,10 @@ export function ForecastPanel({ history, route }: Props) {
           <div>
             <div className="flex items-center gap-2">
               <Brain className="h-5 w-5 text-primary" />
-              <h3 className="font-semibold text-lg">תחזית מחירים — TimesFM</h3>
+              <h3 className="font-semibold text-lg">{t("priceForecast")}</h3>
             </div>
             <p className="text-sm text-muted-foreground mt-0.5">
-              חיזוי 14 ימים קדימה · {history.route}
+              14 {t("daysAhead")} · {history.route}
             </p>
           </div>
           {forecast && (
@@ -139,13 +146,13 @@ export function ForecastPanel({ history, route }: Props) {
         {loading && (
           <div className="h-64 flex flex-col items-center justify-center gap-3 text-muted-foreground">
             <Loader2 className="h-6 w-6 animate-spin" />
-            <p className="text-sm">טוען מודל ומחשב תחזית…</p>
+            <p className="text-sm">{t("forecasting")}</p>
           </div>
         )}
 
         {error && !loading && (
           <div className="h-64 flex flex-col items-center justify-center gap-2 text-rose-600 dark:text-rose-400">
-            <p className="text-sm">לא הצלחתי לחשב תחזית</p>
+            <p className="text-sm">{t("forecastFailed")}</p>
             <p className="text-xs text-muted-foreground">{error}</p>
           </div>
         )}
@@ -153,21 +160,21 @@ export function ForecastPanel({ history, route }: Props) {
         {forecast && !loading && (
           <>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-3 mb-4">
-              <div className={cn("rounded-lg border p-3", recommendationMap[forecast.recommendation].color)}>
+              <div className={cn("rounded-lg border p-3", recStyleMap[forecast.recommendation].color)}>
                 <div className="flex items-center gap-2">
                   {(() => {
-                    const R = recommendationMap[forecast.recommendation];
+                    const R = recStyleMap[forecast.recommendation];
                     const Icon = R.icon;
                     return <Icon className="h-4 w-4" />;
                   })()}
-                  <span className="text-xs font-medium">המלצה</span>
+                  <span className="text-xs font-medium">{t("recommendation2")}</span>
                 </div>
                 <p className="mt-1 font-bold text-base">
-                  {recommendationMap[forecast.recommendation].label}
+                  {t(recKeyMap[forecast.recommendation])}
                 </p>
               </div>
               <div className="rounded-lg border bg-muted/30 p-3">
-                <p className="text-xs text-muted-foreground">שינוי צפוי (14 ימים)</p>
+                <p className="text-xs text-muted-foreground">{t("expectedChange")}</p>
                 <p className={cn(
                   "mt-1 font-bold text-base tabular-nums",
                   forecast.expectedChangePct < 0 ? "text-emerald-600 dark:text-emerald-400" : "text-rose-600 dark:text-rose-400"
@@ -176,7 +183,7 @@ export function ForecastPanel({ history, route }: Props) {
                 </p>
               </div>
               <div className="rounded-lg border bg-muted/30 p-3">
-                <p className="text-xs text-muted-foreground">רמת ביטחון</p>
+                <p className="text-xs text-muted-foreground">{t("confidence")}</p>
                 <p className="mt-1 font-bold text-base tabular-nums">{forecast.confidence}%</p>
               </div>
             </div>
@@ -215,15 +222,7 @@ export function ForecastPanel({ history, route }: Props) {
                       fontSize: 12,
                       direction: "rtl",
                     }}
-                    formatter={(value: number, name: string) => {
-                      const labels: Record<string, string> = {
-                        historical: "היסטורי",
-                        forecast: "תחזית",
-                        upper: "גבול עליון",
-                        lower: "גבול תחתון",
-                      };
-                      return [`$${Math.round(value)}`, labels[name] || name];
-                    }}
+                    formatter={(value: number, name: string) => [`$${Math.round(value)}`, name]}
                   />
                   <Area
                     type="monotone"
@@ -264,7 +263,7 @@ export function ForecastPanel({ history, route }: Props) {
 
             <div className="mt-4 p-3 rounded-lg bg-muted/40 border text-xs leading-relaxed">
               <p className="font-semibold mb-1 flex items-center gap-1">
-                <Brain className="h-3.5 w-3.5" /> ניתוח המודל
+                <Brain className="h-3.5 w-3.5" /> {t("modelAnalysis")}
               </p>
               <p className="text-muted-foreground">{forecast.reasoning}</p>
             </div>

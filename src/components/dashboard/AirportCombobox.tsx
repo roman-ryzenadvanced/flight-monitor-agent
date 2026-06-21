@@ -18,6 +18,8 @@ import {
   CommandList,
 } from "@/components/ui/command";
 import { airports, airportByIata, ccToFlag, regionLabels, type Airport } from "@/lib/airports";
+import { useI18n } from "@/lib/i18n";
+import type { Language } from "@/lib/i18n/translations";
 
 interface Props {
   value: string; // IATA code
@@ -36,6 +38,7 @@ export function AirportCombobox({
 }: Props) {
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState("");
+  const lang = useI18n((s) => s.lang) as Language;
 
   const selected = value ? airportByIata[value.toUpperCase()] : undefined;
 
@@ -116,11 +119,18 @@ export function AirportCombobox({
             )}
           </div>
           <CommandList className="max-h-72">
-            <CommandEmpty>לא נמצאו נמלי תעופה</CommandEmpty>
+            <CommandEmpty>
+              {lang === "he" ? "לא נמצאו נמלי תעופה" :
+               lang === "ru" ? "Аэропорты не найдены" :
+               lang === "ka" ? "აეროპორტები ვერ მოიძებნა" :
+               lang === "ar" ? "لم يتم العثور على مطارات" :
+               lang === "es" ? "No se encontraron aeropuertos" :
+               "No airports found"}
+            </CommandEmpty>
             {grouped.map(({ region, airports: list }) => (
               <CommandGroup
                 key={region}
-                heading={`${regionLabels[region].he} · ${regionLabels[region].en}`}
+                heading={`${regionLabels[region][lang]} · ${regionLabels[region].en}`}
               >
                 {list.map((a) => (
                   <CommandItem
