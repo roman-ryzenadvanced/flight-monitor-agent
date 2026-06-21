@@ -110,11 +110,30 @@ export async function refreshTrackerPrice(
     const deepLink = data.lowest.deepLink;
     const stops = data.lowest.stops || 0;
 
+    // Collect all quotes for the deals grid
+    const allQuotes: Array<{
+      price: number;
+      airline: string;
+      source: string;
+      stops: number;
+      deepLink?: string;
+    }> = Array.isArray(data.quotes)
+      ? data.quotes
+          .filter((q: { price?: number }) => typeof q.price === "number" && q.price > 0)
+          .map((q: { price: number; airline?: string; source?: string; stops?: number; deepLink?: string }) => ({
+            price: Math.round(q.price),
+            airline: q.airline || "Unknown",
+            source: q.source || "web_search",
+            stops: typeof q.stops === "number" ? q.stops : 0,
+            deepLink: q.deepLink || undefined,
+          }))
+      : [];
+
     // Get previous price (for comparison)
     const previous = getLatestSnapshot(tracker.id);
     const previousPrice = previous?.price;
 
-    // Store snapshot
+    // Store snapshot with all quotes
     addSnapshot({
       trackerId: tracker.id,
       ts: new Date().toISOString(),
@@ -124,6 +143,7 @@ export async function refreshTrackerPrice(
       source,
       stops,
       deepLink,
+      allQuotes,
     });
 
     // Update tracker stats

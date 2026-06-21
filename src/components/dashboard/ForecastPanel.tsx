@@ -76,6 +76,13 @@ export function ForecastPanel({ history, route }: Props) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
+  // Stable identifiers for the fetch — prevents re-fetching on every parent re-render.
+  // Only re-fetch when routeId changes, number of history points changes, or lang changes.
+  const routeId = history.routeId;
+  const numPoints = history.points.length;
+  const lastPrice = history.points[history.points.length - 1]?.price ?? 0;
+  const daysToDep = route?.daysToDeparture ?? 0;
+
   useEffect(() => {
     let cancelled = false;
     let reqController: AbortController | null = null;
@@ -117,7 +124,7 @@ export function ForecastPanel({ history, route }: Props) {
       cancelled = true;
       reqController?.abort();
     };
-  }, [history, route, lang]);
+  }, [routeId, numPoints, lastPrice, daysToDep, lang]);
 
   return (
     <motion.div

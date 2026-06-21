@@ -145,3 +145,48 @@ Artifacts:
 - src/lib/priceRefresh.ts — background refresh service
 - src/app/api/real-prices/route.ts — live price API
 - Vercel: https://my-project-three-zeta-61.vercel.app/
+
+---
+Task ID: 4
+Agent: Main (Super Z)
+Task: Fix TimesFM forecast section blinking, and add a flight deals grid showing all vendor options with click-to-buy links.
+
+Work Log:
+- FIXED blinking forecast issue:
+  - Root cause: ForecastPanel's useEffect depended on `history` object reference which changed on every parent re-render (every 5 seconds due to polling)
+  - Fix: Changed dependency array to use stable primitive values (routeId, numPoints, lastPrice, daysToDep, lang) instead of object references
+  - Also reduced polling interval from 5s to 15s, and only reload data when snapshot count actually changes
+  - Verified: 0 forecast API calls in 15 seconds when nothing changed (was multiple per second before)
+- Built FlightDealsGrid component (src/components/dashboard/FlightDealsGrid.tsx):
+  - Shows ALL vendor quotes (not just lowest) in a sortable grid
+  - Each row: price, airline, direct/stops badge, source (Skyscanner/Google Flights/Expedia/etc.), click-to-buy "View deal" button
+  - Sort by price / stops / airline
+  - Lowest price highlighted with green border + "LOWEST" badge
+  - Source badges with brand colors (Skyscanner=blue, Google=green, Expedia=yellow, etc.)
+  - Empty state with "Fetch live prices now" button
+  - Footer showing fetch timestamp and option count
+- Updated localDb PriceSnapshot to store allQuotes array (full list of vendor quotes per scan)
+- Updated priceRefresh.ts to store all quotes in each snapshot
+- Generated deep links for all quotes:
+  - Live web search results: use the actual URL from search results, fallback to Skyscanner
+  - AI estimator: generate Skyscanner URL with correct route/date/passengers/cabin + Google Flights option
+  - URL format: https://www.skyscanner.com/transport/flights/{orig}/{dest}/{date}/?adultsv2={pax}&cabinclass={cabin}
+- Wired FlightDealsGrid into Trackers tab (under selected tracker details, after ForecastPanel)
+- Verified in browser: 5 deals with "View deal" links, all pointing to real Skyscanner URLs with correct route+date
+- Deployed to Vercel: verified 6 quotes returned with deep links for TLV->TBS
+
+Stage Summary:
+- Forecast section no longer blinks — stable display, only re-fetches on actual data change
+- Flight deals grid shows all vendor options with click-to-buy links
+- Every deal has a working deep link to Skyscanner or Google Flights
+- Sortable by price/stops/airline
+- Lowest price highlighted
+
+Artifacts:
+- src/components/dashboard/FlightDealsGrid.tsx — new deals grid component
+- src/components/dashboard/ForecastPanel.tsx — fixed blinking (stable deps)
+- src/lib/realFlights.ts — deep link generation for all quotes
+- src/lib/localDb.ts — allQuotes field in PriceSnapshot
+- src/lib/priceRefresh.ts — stores all quotes
+- src/app/page.tsx — wired FlightDealsGrid + reduced polling
+- Vercel: https://my-project-three-zeta-61.vercel.app/

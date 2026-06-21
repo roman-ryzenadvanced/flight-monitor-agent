@@ -184,6 +184,11 @@ Return ONLY a JSON object (no markdown, no explanation):
     if (jsonMatch) {
       const parsed = JSON.parse(jsonMatch[0]);
       if (Array.isArray(parsed.quotes)) {
+        // Generate Skyscanner deep link as fallback for quotes without one
+        const dateStr = params.departDate.replace(/-/g, "");
+        const returnDateStr = params.returnDate ? params.returnDate.replace(/-/g, "") : "";
+        const skyScannerUrl = `https://www.skyscanner.com/transport/flights/${params.originIata.toLowerCase()}/${params.destIata.toLowerCase()}/${dateStr}/${returnDateStr}/?adultsv2=${params.passengers}`;
+
         quotes = parsed.quotes
           .filter((q: { price?: number }) => typeof q.price === "number" && q.price > 0)
           .slice(0, 5)
@@ -193,7 +198,7 @@ Return ONLY a JSON object (no markdown, no explanation):
             airline: q.airline || "Unknown",
             stops: typeof q.stops === "number" ? q.stops : 0,
             source: q.source || (searchResults.length > 0 ? "web_search" : "ai_estimate"),
-            deepLink: q.deepLink || undefined,
+            deepLink: q.deepLink || skyScannerUrl,
             fetchedAt: new Date().toISOString(),
           }));
       }
@@ -430,15 +435,33 @@ function fallbackEstimate(
     const stopDiscount = stops === 0 ? 1.0 : stops === 1 ? 0.85 : 0.75;
     const finalPrice = Math.round(airlinePrice * stopDiscount);
 
+    // Generate deep links to real booking sites
+    const dateStr = params.departDate.replace(/-/g, "");
+    const returnDateStr = params.returnDate ? params.returnDate.replace(/-/g, "") : "";
+    // Skyscanner URL format
+    const skyScannerUrl = `https://www.skyscanner.com/transport/flights/${origin.iata.toLowerCase()}/${destination.iata.toLowerCase()}/${dateStr}/${returnDateStr}/?adultsv2=${params.passengers}&cabinclass=${params.cabin === "economy" ? "economy" : params.cabin === "premium" ? "premiumeconomy" : params.cabin === "business" ? "business" : "first"}`;
+
     quotes.push({
       price: Math.max(30, finalPrice),
       currency: "USD",
       airline: airline.name,
       stops,
       source: "ai_estimate",
+      deepLink: skyScannerUrl,
       fetchedAt: new Date().toISOString(),
     });
   }
+
+  // Also add a Google Flights option (aggregator) if not already present
+  quotes.push({
+    price: Math.round(base * seasonal * advance * tripMult * cabinMult * 0.95),
+    currency: "USD",
+    airline: "Google Flights",
+    stops: 0,
+    source: "google.com/travel",
+    deepLink: `https://www.google.com/travel/flights?q=flights+from+${origin.iata}+to+${destination.iata}+on+${params.departDate}${params.returnDate ? `+return+${params.returnDate}` : ""}&curr=USD`,
+    fetchedAt: new Date().toISOString(),
+  });
 
   // Sort by price
   quotes.sort((a, b) => a.price - b.price);

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState, useCallback } from "react";
+import { useEffect, useMemo, useState, useCallback, useRef } from "react";
 import { motion } from "framer-motion";
 import {
   Plane,
@@ -34,6 +34,7 @@ import { DailySummaryCard } from "@/components/dashboard/DailySummaryCard";
 import { TrackerCard } from "@/components/dashboard/TrackerCard";
 import { NewTrackerDialog } from "@/components/dashboard/NewTrackerDialog";
 import { LanguageSwitcher } from "@/components/dashboard/LanguageSwitcher";
+import { FlightDealsGrid } from "@/components/dashboard/FlightDealsGrid";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { useT } from "@/lib/i18n";
@@ -47,11 +48,14 @@ import {
   getRoutePriceStats,
   getTrackerStats,
   getGlobalStats,
+  getSnapshots,
+  getLatestSnapshot,
   acknowledgeAlert,
   type AlertRecord,
   type LogRecord,
   type DailySummaryRecord,
   type RoutePriceStats,
+  type PriceSnapshot,
 } from "@/lib/localDb";
 import { refreshAllTrackers, refreshTrackerPrice, startAutoRefresh } from "@/lib/priceRefresh";
 import type { ScannerStatus } from "@/lib/mock/data";
@@ -85,12 +89,21 @@ export default function Home() {
     setTick((x) => x + 1);
   }, [trackers]);
 
+  // Track last snapshot count to detect when new data arrives
+  const lastSnapshotCountRef = useRef(0);
+
   // Initial load + auto-refresh
   useEffect(() => {
     reloadData();
     const cleanup = startAutoRefresh(30 * 60 * 1000); // every 30 min
-    // Re-load data every 5 seconds to pick up changes from background refresh
-    const interval = setInterval(reloadData, 5000);
+    // Check for new data every 15 seconds — only reload if snapshot count changed
+    const interval = setInterval(() => {
+      const currentCount = getSnapshots().length;
+      if (currentCount !== lastSnapshotCountRef.current) {
+        lastSnapshotCountRef.current = currentCount;
+        reloadData();
+      }
+    }, 15000);
     return () => {
       cleanup();
       clearInterval(interval);
@@ -189,6 +202,16 @@ export default function Home() {
     if (!origin || !dest || !stats) return null;
     return { origin, dest, stats };
   }, [selectedTracker, routeStats, tick]);
+
+  // Latest snapshot for the selected tracker (for the deals grid)
+  const [selectedSnapshot, setSelectedSnapshot] = useState<PriceSnapshot | null>(null);
+  useEffect(() => {
+    if (selectedTracker) {
+      setSelectedSnapshot(getLatestSnapshot(selectedTracker.id));
+    } else {
+      setSelectedSnapshot(null);
+    }
+  }, [selectedTracker, tick]);
 
   return (
     <div className="min-h-screen flex flex-col bg-background">
@@ -366,6 +389,12 @@ export default function Home() {
                     daysToDeparture: daysToDeparture(selectedTracker.departDate),
                     monitoring: selectedTracker.active,
                   } as FlightRoute}
+                />
+                <FlightDealsGrid
+                  tracker={selectedTracker}
+                  latestSnapshot={selectedSnapshot}
+                  onRefresh={handleRefreshOne}
+                  refreshing={refreshing}
                 />
               </div>
             )}

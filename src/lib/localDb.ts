@@ -18,6 +18,14 @@ export interface PriceSnapshot {
   source: string;
   stops?: number;
   deepLink?: string;
+  // Full list of quotes from this scan (for the deals grid)
+  allQuotes?: Array<{
+    price: number;
+    airline: string;
+    source: string;
+    stops: number;
+    deepLink?: string;
+  }>;
 }
 
 export interface AlertRecord {
