@@ -1,0 +1,9 @@
+{
+  "name": "forecast-service",
+  "version": "1.0.0",
+  "description": "TimesFM-powered flight price forecast service",
+  "scripts": {
+    "dev": "python --hot index.py 2>&1 || python index.py",
+    "start": "python index.py"
+  }
+}
