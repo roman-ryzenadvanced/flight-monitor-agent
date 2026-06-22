@@ -975,15 +975,15 @@ function DemoBanner({ hasRealPrices }: { hasRealPrices: boolean }) {
           <div className="min-w-0 flex-1 text-xs sm:text-sm">
             {isLive ? (
               <>
-                <span className="font-bold">Live Prices Active</span>
-                <span className="hidden sm:inline"> — Real prices scraped from Skyscanner, Kayak & Google Flights via CORS proxy.</span>
-                <span className="sm:hidden"> — Real scraped prices.</span>
+                <span className="font-bold">Live Prices (Vercel Demo)</span>
+                <span className="hidden sm:inline"> — Prices scraped from web search but may not always be accurate. For reliable real-time pricing, use the self-hosted version.</span>
+                <span className="sm:hidden"> — Scraped, may vary.</span>
               </>
             ) : (
               <>
                 <span className="font-bold">Demo Mode</span>
-                <span className="hidden sm:inline"> — Prices are AI-estimated. Live web scraping is being attempted in the background.</span>
-                <span className="sm:hidden"> — Estimated prices.</span>
+                <span className="hidden sm:inline"> — Prices are AI-estimated and may not always be accurate. For real-time live pricing, use the self-hosted version.</span>
+                <span className="sm:hidden"> — Estimated, may vary.</span>
               </>
             )}
             <a
@@ -993,8 +993,8 @@ function DemoBanner({ hasRealPrices }: { hasRealPrices: boolean }) {
               className="inline-flex items-center gap-1 ml-1.5 sm:ml-2 font-semibold underline hover:no-underline whitespace-nowrap"
             >
               <Github className="h-3.5 w-3.5" />
-              <span className="hidden sm:inline">GitHub repo</span>
-              <span className="sm:hidden">Repo</span>
+              <span className="hidden sm:inline">Self-host from GitHub for full version</span>
+              <span className="sm:hidden">Full version</span>
               <ExternalLink className="h-3 w-3" />
             </a>
           </div>
