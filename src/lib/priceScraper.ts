@@ -15,6 +15,7 @@
 
 import { airportByIata, type Airport } from "./airports";
 import { distanceKm, type CabinClass } from "./priceEngine";
+import { validatePrices } from "./priceValidator";
 
 export interface ScrapedQuote {
   price: number;
@@ -286,22 +287,41 @@ export async function scrapeRealPrices(params: {
 
   // Parse prices from search results
   if (html) {
-    const quotes = parseDuckDuckGoResults(html, params.originIata, params.destIata);
-    if (quotes.length >= 2) {
-      const lowest = quotes[0];
-      const average = Math.round(quotes.reduce((s, q) => s + q.price, 0) / quotes.length);
+    const rawQuotes = parseDuckDuckGoResults(html, params.originIata, params.destIata);
+
+    // === VALIDATION LAYER ===
+    // Validate all scraped prices to reject wrong/fake/outlier prices
+    const validation = validatePrices(rawQuotes, {
+      originIata: params.originIata,
+      destIata: params.destIata,
+      cabin: params.cabin,
+      passengers: params.passengers,
+    });
+
+    // Log rejected prices for debugging
+    if (validation.rejected.length > 0) {
+      console.log(`[scraper] Rejected ${validation.rejected.length} invalid prices:`);
+      validation.rejected.forEach((q) => {
+        console.log(`  $${q.price} (${q.source}) — ${q.rejectionReason}`);
+      });
+    }
+
+    const validQuotes = validation.quotes;
+
+    if (validQuotes.length >= 2) {
+      const lowest = validQuotes[0];
       return {
-        quotes,
+        quotes: validQuotes,
         lowest,
-        average,
+        average: validation.average,
         dataSource: "live_search",
         sourcesTried,
       };
     }
-    if (quotes.length === 1) {
+    if (validQuotes.length === 1) {
       // Add a Google Flights option
-      quotes.push({
-        price: Math.round(quotes[0].price * 1.15),
+      validQuotes.push({
+        price: Math.round(validQuotes[0].price * 1.15),
         currency: "USD",
         airline: "Google Flights",
         stops: 0,
@@ -310,9 +330,9 @@ export async function scrapeRealPrices(params: {
         fetchedAt: new Date().toISOString(),
       });
       return {
-        quotes,
-        lowest: quotes[0],
-        average: Math.round(quotes.reduce((s, q) => s + q.price, 0) / quotes.length),
+        quotes: validQuotes,
+        lowest: validQuotes[0],
+        average: Math.round(validQuotes.reduce((s, q) => s + q.price, 0) / validQuotes.length),
         dataSource: "live_search",
         sourcesTried,
       };
