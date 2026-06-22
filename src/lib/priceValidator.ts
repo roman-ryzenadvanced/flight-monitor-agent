@@ -53,12 +53,13 @@ function getRoutePriceBounds(km: number, cabin: CabinClass): { min: number; max:
   // Expected price range for this route + cabin
   const expected = base * cabinMult;
 
-  // Allow wide bounds — scraped prices can vary, but must be within reasonable range
-  // Min: 20% of expected (covers ultra-low-cost carriers like Ryanair/AirAsia)
-  // Max: 500% of expected (covers business/first class misclassified as economy,
-  //     last-minute bookings, and premium airlines)
-  const min = Math.max(20, expected * 0.20);
-  const max = expected * 5.0;
+  // Tighter bounds to reject wrong prices:
+  // Min: 40% of expected (covers ultra-low-cost carriers + sales, but rejects
+  //      hotel/car/irrelevant prices that are way too low)
+  // Max: 300% of expected (covers premium airlines + last-minute, but rejects
+  //      business/first class prices misclassified as economy)
+  const min = Math.max(30, expected * 0.40);
+  const max = expected * 3.0;
 
   return { min, max, expected };
 }
