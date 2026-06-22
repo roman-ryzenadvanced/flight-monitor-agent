@@ -223,11 +223,23 @@ export default function Home() {
     }
   }, [selectedTracker, tick]);
 
+  // Check if ANY tracker has real (non-AI-estimated) prices
+  const hasRealPrices = useMemo(() => {
+    for (const tracker of trackers) {
+      const snap = getLatestSnapshot(tracker.id);
+      if (snap && snap.allQuotes) {
+        const hasReal = snap.allQuotes.some(q => q.source !== "ai_estimate");
+        if (hasReal) return true;
+      }
+    }
+    return false;
+  }, [trackers, tick]);
+
   return (
     <div className="min-h-screen flex flex-col bg-background">
-      {/* Demo Mode Banner — only shown on Vercel (not in local sandbox) */}
+      {/* Status Banner — shown on Vercel. Dynamic based on whether live scraping succeeded. */}
       {isDemoMode && (
-        <DemoBanner />
+        <DemoBanner hasRealPrices={hasRealPrices} />
       )}
       {/* Header */}
       <header className="sticky top-0 z-40 border-b bg-background/80 backdrop-blur-md">
@@ -931,27 +943,49 @@ function RealDailySummaryCard({
   );
 }
 
-// Demo Mode Banner — shown only on Vercel (not in local sandbox)
-// Explains that prices are estimated and TimesFM forecast uses statistical fallback.
+// Status Banner — shown only on Vercel (not in local sandbox)
+// Dynamic: shows "Live prices active!" when web scraping succeeds,
+// or "Demo Mode" when prices are AI-estimated.
 // Links to the GitHub repo for the full live experience.
-function DemoBanner() {
+function DemoBanner({ hasRealPrices }: { hasRealPrices: boolean }) {
   const [dismissed, setDismissed] = useState(false);
 
   if (dismissed) return null;
+
+  const isLive = hasRealPrices;
 
   return (
     <motion.div
       initial={{ opacity: 0, y: -20 }}
       animate={{ opacity: 1, y: 0 }}
-      className="sticky top-0 z-50 w-full bg-amber-500/95 dark:bg-amber-600/95 text-amber-950 dark:text-amber-50 shadow-md"
+      className={cn(
+        "sticky top-0 z-50 w-full shadow-md",
+        isLive
+          ? "bg-emerald-500/95 dark:bg-emerald-600/95 text-emerald-950 dark:text-emerald-50"
+          : "bg-amber-500/95 dark:bg-amber-600/95 text-amber-950 dark:text-amber-50"
+      )}
     >
       <div className="container mx-auto px-3 sm:px-4 py-2.5 flex items-center justify-between gap-2">
         <div className="flex items-center gap-2 min-w-0 flex-1">
-          <AlertCircle className="h-4 w-4 sm:h-5 sm:w-5 shrink-0" />
+          {isLive ? (
+            <Activity className="h-4 w-4 sm:h-5 sm:w-5 shrink-0" />
+          ) : (
+            <AlertCircle className="h-4 w-4 sm:h-5 sm:w-5 shrink-0" />
+          )}
           <div className="min-w-0 flex-1 text-xs sm:text-sm">
-            <span className="font-bold">Demo Mode</span>
-            <span className="hidden sm:inline"> — Prices are AI-estimated and forecasts use statistical fallback.</span>
-            <span className="sm:hidden"> — Estimated prices.</span>
+            {isLive ? (
+              <>
+                <span className="font-bold">Live Prices Active</span>
+                <span className="hidden sm:inline"> — Real prices scraped from Skyscanner, Kayak & Google Flights via CORS proxy.</span>
+                <span className="sm:hidden"> — Real scraped prices.</span>
+              </>
+            ) : (
+              <>
+                <span className="font-bold">Demo Mode</span>
+                <span className="hidden sm:inline"> — Prices are AI-estimated. Live web scraping is being attempted in the background.</span>
+                <span className="sm:hidden"> — Estimated prices.</span>
+              </>
+            )}
             <a
               href="https://github.com/roman-ryzenadvanced/flight-monitor-agent"
               target="_blank"
@@ -959,15 +993,20 @@ function DemoBanner() {
               className="inline-flex items-center gap-1 ml-1.5 sm:ml-2 font-semibold underline hover:no-underline whitespace-nowrap"
             >
               <Github className="h-3.5 w-3.5" />
-              <span className="hidden sm:inline">Use GitHub repo for live experience</span>
-              <span className="sm:hidden">GitHub repo</span>
+              <span className="hidden sm:inline">GitHub repo</span>
+              <span className="sm:hidden">Repo</span>
               <ExternalLink className="h-3 w-3" />
             </a>
           </div>
         </div>
         <button
           onClick={() => setDismissed(true)}
-          className="shrink-0 flex h-7 w-7 items-center justify-center rounded-md hover:bg-amber-600/20 dark:hover:bg-amber-300/20 transition-colors min-h-[28px] min-w-[28px]"
+          className={cn(
+            "shrink-0 flex h-7 w-7 items-center justify-center rounded-md transition-colors min-h-[28px] min-w-[28px]",
+            isLive
+              ? "hover:bg-emerald-600/20 dark:hover:bg-emerald-300/20"
+              : "hover:bg-amber-600/20 dark:hover:bg-amber-300/20"
+          )}
           aria-label="Dismiss banner"
           type="button"
         >

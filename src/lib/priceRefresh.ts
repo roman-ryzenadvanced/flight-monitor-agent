@@ -80,7 +80,7 @@ export async function refreshTrackerPrice(
       message: `Fetching real prices: ${routeLabel} · ${tracker.departDate} · ${tracker.cabin}`,
     });
 
-    // Call the API route which uses z-ai-web-dev-sdk web search
+    // Call the API route which tries: z-ai SDK → server scrape → AI estimator
     const response = await fetch("/api/real-prices", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -98,7 +98,44 @@ export async function refreshTrackerPrice(
       throw new Error(`API returned ${response.status}`);
     }
 
-    const data = await response.json();
+    let data = await response.json();
+
+    // If server returned AI-estimated prices (not live), try client-side scraping.
+    // The browser can reach any site via CORS proxies — no IP restrictions.
+    if (data.dataSource === "live_search_fallback" || data.dataSource === "live_search") {
+      // Server already got live prices — use them
+    } else {
+      // Server returned AI estimates — try client-side scraping as a creative workaround
+      try {
+        const scrapeResponse = await fetch("/api/client-scrape", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            originIata: tracker.originIata,
+            destIata: tracker.destIata,
+            departDate: tracker.departDate,
+            returnDate: tracker.returnDate,
+            cabin: tracker.cabin,
+            passengers: tracker.passengers,
+          }),
+        });
+        if (scrapeResponse.ok) {
+          const scrapeData = await scrapeResponse.json();
+          if (scrapeData.quotes && scrapeData.quotes.length >= 2) {
+            // Scraping succeeded! Use real scraped prices
+            data = scrapeData;
+            addLog({
+              ts: new Date().toISOString(),
+              level: "info",
+              source: "Scraper",
+              message: `Live scrape succeeded: ${routeLabel} — ${scrapeData.quotes.length} real prices from ${scrapeData.sourcesTried?.join(", ")}`,
+            });
+          }
+        }
+      } catch (scrapeErr) {
+        console.error("[priceRefresh] client scrape failed:", scrapeErr);
+      }
+    }
 
     if (!data.lowest || typeof data.lowest.price !== "number") {
       throw new Error("no prices found");
