@@ -15,6 +15,7 @@ import {
   defaultDepartDate,
   daysToDeparture,
   getCabinLabel,
+  generatePriceData,
 } from "../src/lib/priceEngine";
 import { airportByIata } from "../src/lib/airports";
 
@@ -125,8 +126,6 @@ describe("Deterministic Price Generation", () => {
     // Same route + date + cabin should always produce the same price
     const tlv = airportByIata["TLV"]!;
     const jfk = airportByIata["JFK"]!;
-    // Import dynamically to avoid circular deps in test
-    const { generatePriceData } = require("../src/lib/priceEngine");
     const result1 = generatePriceData(tlv, jfk, {
       originIata: "TLV",
       destIata: "JFK",

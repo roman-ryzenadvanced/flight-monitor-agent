@@ -22,6 +22,9 @@ import {
   Zap,
   Shield,
   RefreshCw,
+  Github,
+  ExternalLink,
+  X,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { StatCard } from "@/components/dashboard/StatCard";
@@ -62,6 +65,13 @@ import type { ScannerStatus } from "@/lib/mock/data";
 
 export default function Home() {
   const t = useT();
+  // Detect if running on Vercel (production/preview) vs local sandbox.
+  // Vercel sets NEXT_PUBLIC_VERCEL_ENV to "production" or "preview".
+  // In the sandbox, this is undefined.
+  const isDemoMode = typeof window !== "undefined"
+    ? window.location.hostname.includes("vercel.app")
+    : process.env.NEXT_PUBLIC_VERCEL_ENV === "production" || process.env.NEXT_PUBLIC_VERCEL_ENV === "preview";
+
   const trackers = useTrackerStore((s) => s.trackers);
   const selectedId = useTrackerStore((s) => s.selectedId);
   const setSelected = useTrackerStore((s) => s.setSelected);
@@ -215,6 +225,10 @@ export default function Home() {
 
   return (
     <div className="min-h-screen flex flex-col bg-background">
+      {/* Demo Mode Banner — only shown on Vercel (not in local sandbox) */}
+      {isDemoMode && (
+        <DemoBanner />
+      )}
       {/* Header */}
       <header className="sticky top-0 z-40 border-b bg-background/80 backdrop-blur-md">
         <div className="container mx-auto px-3 sm:px-4 py-2.5 sm:py-3 flex items-center justify-between gap-2">
@@ -912,6 +926,53 @@ function RealDailySummaryCard({
             ))}
           </div>
         )}
+      </div>
+    </motion.div>
+  );
+}
+
+// Demo Mode Banner — shown only on Vercel (not in local sandbox)
+// Explains that prices are estimated and TimesFM forecast uses statistical fallback.
+// Links to the GitHub repo for the full live experience.
+function DemoBanner() {
+  const [dismissed, setDismissed] = useState(false);
+
+  if (dismissed) return null;
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: -20 }}
+      animate={{ opacity: 1, y: 0 }}
+      className="sticky top-0 z-50 w-full bg-amber-500/95 dark:bg-amber-600/95 text-amber-950 dark:text-amber-50 shadow-md"
+    >
+      <div className="container mx-auto px-3 sm:px-4 py-2.5 flex items-center justify-between gap-2">
+        <div className="flex items-center gap-2 min-w-0 flex-1">
+          <AlertCircle className="h-4 w-4 sm:h-5 sm:w-5 shrink-0" />
+          <div className="min-w-0 flex-1 text-xs sm:text-sm">
+            <span className="font-bold">Demo Mode</span>
+            <span className="hidden sm:inline"> — Prices are AI-estimated and forecasts use statistical fallback.</span>
+            <span className="sm:hidden"> — Estimated prices.</span>
+            <a
+              href="https://github.com/roman-ryzenadvanced/flight-monitor-agent"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-1 ml-1.5 sm:ml-2 font-semibold underline hover:no-underline whitespace-nowrap"
+            >
+              <Github className="h-3.5 w-3.5" />
+              <span className="hidden sm:inline">Use GitHub repo for live experience</span>
+              <span className="sm:hidden">GitHub repo</span>
+              <ExternalLink className="h-3 w-3" />
+            </a>
+          </div>
+        </div>
+        <button
+          onClick={() => setDismissed(true)}
+          className="shrink-0 flex h-7 w-7 items-center justify-center rounded-md hover:bg-amber-600/20 dark:hover:bg-amber-300/20 transition-colors min-h-[28px] min-w-[28px]"
+          aria-label="Dismiss banner"
+          type="button"
+        >
+          <X className="h-4 w-4" />
+        </button>
       </div>
     </motion.div>
   );
